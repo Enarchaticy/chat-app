@@ -1,0 +1,17 @@
+<mat-card class="card-width">
+  <mat-card-header>
+    <mat-card-subtitle>Please enter the room password!</mat-card-subtitle>
+  </mat-card-header>
+  <form *ngIf="passwordForm" [formGroup]="passwordForm" (ngSubmit)="submit()">
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Password" type=password autocomplete="true" formControlName="password">
+      <mat-error *ngIf="passwordForm.controls.password.hasError('required')">
+        The password is required
+      </mat-error>
+    </mat-form-field>
+  </form>
+  <mat-card-actions>
+    <button mat-stroked-button (click)="resetForm()">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="passwordForm.invalid" (click)="submit()">Submit</button>
+  </mat-card-actions>
+</mat-card>

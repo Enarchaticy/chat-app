@@ -1,0 +1,8 @@
+<p>{{roomInput.id}}</p>
+
+<!-- <p>{{room.id}}{{room.visibility}}{{room.messages}}{{room.id}}</p>
+ -->
+
+<ng-container *ngIf="room">
+  <p *ngFor="let message of room.messages">{{message.text}}</p>
+</ng-container>
