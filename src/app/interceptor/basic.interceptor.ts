@@ -166,11 +166,18 @@ export class BasicInterceptor implements HttpInterceptor {
     }
 
     if (request.method === 'POST' && request.url === 'room') {
-      rooms.push({ ...(request.body as Room), id: 'd' });
+      rooms.push({
+        ...(request.body as Room),
+        id: Math.floor(Math.random() * 10000) + '',
+        messages: [],
+      });
       return of(
         new HttpResponse({
           status: 201,
-          body: { message: 'Successful room registration', roomId: 'd' },
+          body: {
+            message: 'Successful room registration',
+            room: rooms[rooms.length - 1],
+          },
         })
       );
     }

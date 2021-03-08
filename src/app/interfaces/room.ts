@@ -133,17 +133,17 @@ export const rooms: Room[] = [
       },
       {
         text: 'buli 8ra?',
-        date: new Date('2021-03-02T08:58:12.177Z'),
+        date: new Date('2021-03-03T08:58:12.177Z'),
         author: { id: '1', name: 'adam' },
       },
       {
         text: 'mehet',
-        date: new Date('2021-03-02T08:58:15.177Z'),
+        date: new Date('2021-03-03T08:58:15.177Z'),
         author: { id: '2', name: 'peti' },
       },
       {
         text: 'mehet',
-        date: new Date('2021-03-02T08:58:18.177Z'),
+        date: new Date('2021-03-03T08:58:18.177Z'),
         author: { id: '3', name: 'rita' },
       },
     ],

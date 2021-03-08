@@ -1,3 +1,4 @@
+import { Room } from './../../interfaces/room';
 import { Injectable } from '@angular/core';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
@@ -8,14 +9,14 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class DialogService {
   private overlayRef: OverlayRef;
-  public passwordSubject: BehaviorSubject<
-    string | boolean
+  public dataSubject: BehaviorSubject<
+    string | boolean | Room
   > = new BehaviorSubject(false);
 
   constructor(private overlay: Overlay) {}
 
   public openAuthorizeRoomDialog<T>(componentPortal: ComponentPortal<T>): void {
-    this.passwordSubject.next(false);
+    this.dataSubject.next(false);
     this.overlayRef = this.overlay.create({
       hasBackdrop: true,
       positionStrategy: this.overlay
@@ -47,9 +48,9 @@ export class DialogService {
     this.overlayRef.backdropClick().subscribe(() => this.closeDialog());
   }
 
-  public closeDialog(password?: string): void {
-    if (password) {
-      this.passwordSubject.next(password);
+  public closeDialog(data?: string | Room): void {
+    if (data) {
+      this.dataSubject.next(data);
     }
     this.overlayRef.dispose();
   }

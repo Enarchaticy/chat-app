@@ -4,9 +4,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Room, Visibility } from './../../interfaces/room';
 import { Subscription } from 'rxjs';
 import { RoomService } from './../../services/room.service';
-import { Component, Input, OnInit, OnDestroy, OnChanges } from '@angular/core';
+import { Component, Input, OnDestroy, OnChanges } from '@angular/core';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-chat-window',
@@ -20,6 +19,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   userId = '1';
 
   room: Room;
+  messages: any;
   roomSubs: Subscription;
   passwordSubs: Subscription;
 
@@ -39,6 +39,31 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
     }
   }
 
+  messagePrettier(): void {
+    this.messages = this.groupBy(
+      this.room.messages.map((message) => {
+        return {
+          ...message,
+          timestamp:
+            message.date.getFullYear() +
+            '/' +
+            message.date.getMonth() +
+            '/' +
+            message.date.getDate(),
+        };
+      }),
+      'timestamp'
+    );
+  }
+
+  groupBy(list, by): any {
+    return list.reduce((r, a) => {
+      r[a[by]] = r[a[by]] || [];
+      r[a[by]].push(a);
+      return r;
+    }, []);
+  }
+
   getRoomById(): void {
     // ezt ha van lehetőség javítani
 
@@ -49,6 +74,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
           (result: Room) => {
             console.log(result);
             this.room = result;
+            this.messagePrettier();
           },
           (error) => {
             console.error(error);
@@ -66,6 +92,9 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
       this.roomSubs = this.roomService.getPublic(this.roomInput.id).subscribe(
         (result: Room) => {
           this.room = result;
+          if (result) {
+            this.messagePrettier();
+          }
         },
         (error) => {
           console.error(error);
@@ -90,28 +119,27 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   }
 
   handleClosedDialog(): void {
-    this.passwordSubs = this.dialogService.passwordSubject.subscribe(
-      (password) => {
-        if (password) {
-          this.roomSubs = this.roomService
-            .getProtected(this.roomInput.id, password as string)
-            .subscribe(
-              (result: Room) => {
-                this.room = result;
-              },
-              (error) => {
-                console.error(error);
-              },
-              () => {
-                this.passwordSubs.unsubscribe();
-                if (!this.room || !this.room.id) {
-                  console.error('Not authorized!');
-                  this.router.navigate(['/room', 'me']);
-                }
+    this.passwordSubs = this.dialogService.dataSubject.subscribe((password) => {
+      if (password && typeof password === 'string') {
+        this.roomSubs = this.roomService
+          .getProtected(this.roomInput.id, password as string)
+          .subscribe(
+            (result: Room) => {
+              this.room = result;
+              this.messagePrettier();
+            },
+            (error) => {
+              console.error(error);
+            },
+            () => {
+              this.passwordSubs.unsubscribe();
+              if (!this.room || !this.room.id) {
+                console.error('Not authorized!');
+                this.router.navigate(['/room', 'me']);
               }
-            );
-        }
+            }
+          );
       }
-    );
+    });
   }
 }

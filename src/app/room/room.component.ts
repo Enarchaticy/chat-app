@@ -31,6 +31,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   openedRoomSubs: Subscription;
   directMessagesSubs: Subscription;
   createRoomSubs: Subscription;
+  createdRoomSubs: Subscription;
 
   userId = '1';
   userName = 'adam';
@@ -77,6 +78,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   openCreateRoomDialog(): void {
+    this.getCreatedRoom();
     const containerPortal = new ComponentPortal(
       CreateRoomDialogComponent,
       null
@@ -158,5 +160,20 @@ export class RoomComponent implements OnInit, OnDestroy {
           console.error(error);
         }
       );
+  }
+
+  getCreatedRoom(): void {
+    this.createdRoomSubs = this.dialogService.dataSubject.subscribe(
+      (room: any) => {
+        if (room && room.id) {
+          this.rooms.push(room);
+          this.roomInput = room;
+          this.router.navigate(['room', room.id]);
+        }
+      },
+      () => {
+        this.createdRoomSubs.unsubscribe();
+      }
+    );
   }
 }

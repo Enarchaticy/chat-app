@@ -1,3 +1,4 @@
+import { DialogService } from './../dialog.service';
 import { User } from './../../../interfaces/user';
 import { first } from 'rxjs/operators';
 import { UserService } from './../../../services/user.service';
@@ -31,7 +32,8 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private roomService: RoomService,
     private userService: UserService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialogService: DialogService
   ) {}
 
   ngOnInit(): void {
@@ -141,10 +143,13 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
         this.snackBar.open(result.message, null, {
           duration: 2000,
         });
-        console.log(result);
+        this.dialogService.closeDialog(result.room);
       },
       (error) => {
-        console.log(error);
+        this.snackBar.open('Something went wrong!', null, {
+          duration: 2000,
+        });
+        console.error(error);
       }
     );
   }
