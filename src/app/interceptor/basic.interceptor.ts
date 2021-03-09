@@ -1,3 +1,4 @@
+import { Message } from './../interfaces/message';
 import { Visibility, Room } from './../interfaces/room';
 import { users, User } from './../interfaces/user';
 import { Injectable } from '@angular/core';
@@ -140,6 +141,23 @@ export class BasicInterceptor implements HttpInterceptor {
           })
         );
       }
+    }
+
+    if (request.method === 'PUT' && request.url === 'room') {
+      const room1: Room = rooms.find(
+        (room: Room) => room.id === request.params.get('id')
+      );
+      if (room1) {
+        room1.messages.push(request.body as Message);
+      }
+      return of(
+        new HttpResponse({
+          status: 200,
+          body: room1
+            ? { message: 'Message sent successfully' }
+            : { message: 'something went wrong!' },
+        })
+      );
     }
 
     /* if (request.method === 'POST' && request.url === 'user/auth') {

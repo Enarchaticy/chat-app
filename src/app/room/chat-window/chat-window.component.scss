@@ -1,5 +1,10 @@
-.no-message-card {
+.asd {
+    min-height: 83%;
+}
+
+mat-card {
     margin: 0 auto;
+    margin-top: 250px;
     width: 250px;
 }
 
@@ -28,6 +33,18 @@
     margin-left: 16px;
 }
 
+.form-container {
+    position: -webkit-sticky;
+    position: sticky;
+    background-color: #303030;
+    bottom: 0;
+    align-self: flex-end;
+}
+
 .full-width {
-    width: 100%;
+    width: 90%;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0px;
+    z-index: 1;
 }

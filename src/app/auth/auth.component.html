@@ -1,0 +1,62 @@
+<div class="background">
+
+  <mat-card class="card">
+    <mat-card-header>
+      <mat-card-subtitle>Welcome on chat-app! You can {{isLoginActive?"log in":"sign in"}} here!</mat-card-subtitle>
+    </mat-card-header>
+
+    <form *ngIf="isLoginActive&&loginForm" [formGroup]="loginForm" (ngSubmit)="submit()">
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Email" formControlName="email">
+        <mat-error *ngIf="loginForm.controls.email.hasError('required')||loginForm.controls.email.hasError('email')">
+          Has to be an email!
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Password" type=password autocomplete="true" formControlName="password">
+        <mat-error *ngIf="loginForm.controls.password.hasError('required')">
+          The password is required
+        </mat-error>
+      </mat-form-field>
+    </form>
+
+    <form *ngIf="!isLoginActive&&registrationForm" [formGroup]="registrationForm" (ngSubmit)="submit()">
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Email" formControlName="email">
+        <mat-error
+          *ngIf="registrationForm.controls.email.hasError('required')||registrationForm.controls.email.hasError('email')">
+          Has to be an email!
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Name" formControlName="name">
+        <mat-error *ngIf="registrationForm.controls.name.hasError('required')">
+          The password again is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Password" type=password autocomplete="true" formControlName="password">
+        <mat-error *ngIf="registrationForm.controls.password.hasError('required')">
+          The password is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field class="full-width">
+        <input matInput placeholder="Password Again" type=password autocomplete="true" formControlName="passwordAgain">
+        <mat-error *ngIf="registrationForm.controls.passwordAgain.hasError('match')">
+          The password again is required
+        </mat-error>
+      </mat-form-field>
+
+    </form>
+
+    <mat-card-actions>
+      <button mat-stroked-button (click)="isLoginActive?resetLoginForm():resetRegistrationForm()">Cancel</button>
+      <button mat-raised-button color="primary" [disabled]="isLoginActive?loginForm.invalid:registrationForm.invalid"
+        (click)="submit()">Submit</button>
+    </mat-card-actions>
+
+    <p>{{isLoginActive?"You don't have an account?":"Are you have an account?"}} <span
+        (click)="setIsLoginActive()">{{isLoginActive?"Sign in":"Log in"}} here!</span></p>
+
+  </mat-card>
+</div>

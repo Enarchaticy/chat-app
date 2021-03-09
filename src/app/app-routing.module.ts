@@ -6,6 +6,10 @@ const routes: Routes = [
     path: 'room/:id',
     loadChildren: () => import('./room/room.module').then((m) => m.RoomModule),
   },
+  {
+    path: 'auth',
+    loadChildren: () => import('./auth/auth.module').then((m) => m.AuthModule),
+  },
   { path: '**', redirectTo: '/room/me', pathMatch: 'full' },
 ];
 

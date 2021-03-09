@@ -1,25 +1,32 @@
 <ng-container *ngIf="roomInput.id==='me';else notMyself">
-  <mat-card class="no-message-card">
+  <mat-card>
     Choose a room, and start talking!
   </mat-card>
 </ng-container>
 <ng-template #notMyself>
-  <ng-container *ngIf="room; else noRoom">
-    <div *ngFor="let messagesByDate of messages | keyvalue" class="chat">
-      <p class="date-center">{{messagesByDate.key}}</p>
-      <div *ngFor="let message of messagesByDate.value">
-        <span class="name">{{message.author.name}}</span>
-        <span class="time">{{message.date|date: 'HH:mm'}}</span>
-        <p class="text">{{message.text}}</p>
+  <div class="asd">
+    <ng-container *ngIf="room && room.messages.length>0; else noRoom">
+      <div *ngFor="let messagesByDate of messages | keyvalue" class="chat">
+        <p class="date-center">{{messagesByDate.key}}</p>
+        <div *ngFor="let message of messagesByDate.value">
+          <span class="name">{{message.author.name}}</span>
+          <span class="time">{{message.date|date: 'HH:mm'}}</span>
+          <p class="text">{{message.text}}</p>
+        </div>
       </div>
-    </div>
-  </ng-container>
-  <ng-template #noRoom>
-    <mat-card class="no-message-card">
-      Write your first message!
-    </mat-card>
-  </ng-template>
-  <mat-form-field class="full-width">
-    <textarea matInput minRows="1" maxRows="5"></textarea>
-  </mat-form-field>
+    </ng-container>
+    <ng-template #noRoom>
+      <mat-card>
+        Write your first message!
+      </mat-card>
+    </ng-template>
+  </div>
+  <div class="form-container">
+    <mat-form-field class="full-width">
+      <input matInput placeholder="Write something!" type="text" [(ngModel)]="chat" (keydown.enter)="submitMessage()">
+      <button mat-button matSuffix mat-icon-button aria-label="Send Message" (click)="submitMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
 </ng-template>

@@ -1,3 +1,4 @@
+import { Message } from './../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { DialogService } from './../dialogs/dialog.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -13,15 +14,17 @@ import { ComponentPortal } from '@angular/cdk/portal';
   styleUrls: ['./chat-window.component.scss'],
 })
 export class ChatWindowComponent implements OnDestroy, OnChanges {
-  // @Input() roomId: string;
   @Input() roomInput: Room;
 
   userId = '1';
+  userName = 'adam';
 
   room: Room;
   messages: any;
   roomSubs: Subscription;
   passwordSubs: Subscription;
+  chat = '';
+  sendMessageSubs: Subscription;
 
   constructor(
     private roomService: RoomService,
@@ -47,7 +50,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
           timestamp:
             message.date.getFullYear() +
             '/' +
-            message.date.getMonth() +
+            (message.date.getMonth() + 1) +
             '/' +
             message.date.getDate(),
         };
@@ -72,9 +75,10 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
         .getPrivate(this.roomInput.id, this.userId)
         .subscribe(
           (result: Room) => {
-            console.log(result);
-            this.room = result;
-            this.messagePrettier();
+            if (result) {
+              this.room = result;
+              this.messagePrettier();
+            }
           },
           (error) => {
             console.error(error);
@@ -106,6 +110,27 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
         }
       );
     }
+  }
+
+  submitMessage(): void {
+    if (this.chat !== '') {
+      const message = {
+        date: new Date(),
+        text: this.chat,
+        author: { id: this.userId, name: this.userName },
+      };
+      this.sendMessage(message);
+      this.messagePrettier();
+    }
+    this.chat = '';
+  }
+
+  sendMessage(message: Message): void {
+    this.sendMessageSubs = this.roomService
+      .sendMessage(this.roomInput.id, message)
+      .subscribe((res) => {
+        /* console.log(res); */
+      });
   }
 
   openAuthorizeRoomDialog(): void {

@@ -150,10 +150,7 @@ export class RoomComponent implements OnInit, OnDestroy {
       })
       .subscribe(
         (result: any) => {
-          this.roomInput = {
-            id: result.roomId,
-            visibility: Visibility.private,
-          };
+          this.roomInput = result.room;
           this.router.navigate(['/room', this.roomInput.id]);
         },
         (error) => {

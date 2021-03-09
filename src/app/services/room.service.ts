@@ -1,3 +1,4 @@
+import { Message } from './../interfaces/message';
 import { Observable } from 'rxjs';
 import { Room } from './../interfaces/room';
 import { Injectable } from '@angular/core';
@@ -47,5 +48,10 @@ export class RoomService {
       .append('type', 'visible')
       .append('userId', userId); // userId ha nem kell akkor törölni
     return this.http.get('room', { params });
+  }
+
+  sendMessage(id: string, message: Message): Observable<unknown> {
+    const params = new HttpParams().append('id', id);
+    return this.http.put('room', message, { params });
   }
 }
