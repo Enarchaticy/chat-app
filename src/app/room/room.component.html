@@ -8,9 +8,12 @@
         [routerLink]="['/room',room.id]">{{room.name}}</a>
       <h4>Direct Message</h4>
       <a *ngFor="let user of onlineUsers" mat-list-item (click)="getDirectMessages(user)">{{user.name}}</a>
-      <a class="create-room" mat-list-item (click)="openCreateRoomDialog()">
-        <mat-icon>add_circle_outline</mat-icon>create room
-      </a>
+      <div class="filler"></div>
+      <div class="create-room-div">
+        <a class="create-room" mat-list-item (click)="openCreateRoomDialog()">
+          <mat-icon>add_circle_outline</mat-icon>create room
+        </a>
+      </div>
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
@@ -20,7 +23,10 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
       <span>chat-app</span>
+      <button class="logout" mat-icon-button type="button" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+      </button>
     </mat-toolbar>
-    <app-chat-window [roomInput]="roomInput"></app-chat-window>
+    <app-chat-window [roomInput]="roomInput" (setDefault)="setDefaultRoom()"></app-chat-window>
   </mat-sidenav-content>
 </mat-sidenav-container>

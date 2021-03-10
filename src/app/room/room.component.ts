@@ -5,7 +5,7 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { User } from './../interfaces/user';
 import { RoomService } from './../services/room.service';
 import { UserService } from './../services/user.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable, Subscription } from 'rxjs';
@@ -33,17 +33,12 @@ export class RoomComponent implements OnInit, OnDestroy {
   createRoomSubs: Subscription;
   createdRoomSubs: Subscription;
 
-  userId = '1';
-  userName = 'adam';
-
-  roomId: string;
   roomInput: Room = { name: 'me', id: 'me', visibility: Visibility.public };
   onlineUsers: User[] = [];
   rooms: Room[];
 
   constructor(
     private breakpointObserver: BreakpointObserver,
-    private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
     private roomService: RoomService,
@@ -51,7 +46,6 @@ export class RoomComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.getRouterId();
     this.getOnlineUsers();
     this.getVisibleRooms();
   }
@@ -77,60 +71,55 @@ export class RoomComponent implements OnInit, OnDestroy {
     }
   }
 
-  openCreateRoomDialog(): void {
-    this.getCreatedRoom();
-    const containerPortal = new ComponentPortal(
-      CreateRoomDialogComponent,
-      null
-    );
-    this.dialogService.openAuthorizeRoomDialog<CreateRoomDialogComponent>(
-      containerPortal
-    );
+  setDefaultRoom(): void {
+    this.roomInput = { id: 'me', visibility: Visibility.public };
   }
 
-  getRouterId(): void {
-    this.routerSubs = this.route.params.subscribe((params) => {
-      this.roomId = params.id;
-      if (params.id === 'me' && this.roomInput.id !== 'me') {
-        this.roomInput = {
-          name: 'me',
-          id: 'me',
-          visibility: Visibility.public,
-        };
-      }
-    });
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/auth']);
+  }
+
+  openCreateRoomDialog(): void {
+    const containerPortal = new ComponentPortal(CreateRoomDialogComponent);
+    this.dialogService.openDialog<CreateRoomDialogComponent>(containerPortal);
+    this.getCreatedRoom();
   }
 
   getOnlineUsers(): void {
-    this.userSubs = this.userService.getOnline(this.userId).subscribe(
-      (result: User[]) => {
-        this.onlineUsers = result;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
+    this.userSubs = this.userService
+      .getOnline(localStorage.getItem('id'))
+      .subscribe(
+        (result: User[]) => {
+          this.onlineUsers = result;
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
   }
 
   getVisibleRooms(): void {
-    this.visibleRoomsSubs = this.roomService.getVisible(this.userId).subscribe(
-      (result: Room[]) => {
-        this.rooms = result;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
+    this.visibleRoomsSubs = this.roomService
+      .getVisible(localStorage.getItem('id'))
+      .subscribe(
+        (result: Room[]) => {
+          this.rooms = result;
+        },
+        (error) => {
+          console.error(error);
+        }
+      );
   }
 
   getDirectMessages(friend: User): void {
     this.directMessagesSubs = this.roomService
-      .getDirectMessages(this.userId, friend.id)
+      .getDirectMessages(localStorage.getItem('id'), friend.id)
       .subscribe(
         (result: Room) => {
           if (result) {
             this.roomInput = result;
-            this.router.navigate(['/room', result.id]);
+            this.router.navigate(['/room']);
           } else {
             this.createRoomForDirectMessages(friend);
           }
@@ -146,12 +135,18 @@ export class RoomComponent implements OnInit, OnDestroy {
       .create({
         visibility: Visibility.private,
         messages: [],
-        members: [friend, { id: this.userId, name: this.userName }],
+        members: [
+          friend,
+          {
+            id: localStorage.getItem('id'),
+            name: localStorage.getItem('name'),
+          },
+        ],
       })
       .subscribe(
         (result: any) => {
           this.roomInput = result.room;
-          this.router.navigate(['/room', this.roomInput.id]);
+          this.router.navigate(['/room']);
         },
         (error) => {
           console.error(error);
@@ -165,10 +160,11 @@ export class RoomComponent implements OnInit, OnDestroy {
         if (room && room.id) {
           this.rooms.push(room);
           this.roomInput = room;
-          this.router.navigate(['room', room.id]);
+          this.router.navigate(['room']);
+          this.createdRoomSubs.unsubscribe();
         }
       },
-      () => {
+      (error) => {
         this.createdRoomSubs.unsubscribe();
       }
     );

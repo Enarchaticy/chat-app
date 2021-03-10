@@ -14,10 +14,7 @@ export class UserService {
   }
 
   auth(email: string, password: string): Observable<unknown> {
-    const params = new HttpParams()
-      .append('email', email)
-      .append('password', password);
-    return this.http.post('user/auth', { params });
+    return this.http.post('user/auth', { email, password });
   }
 
   getById(id: string): Observable<unknown> {

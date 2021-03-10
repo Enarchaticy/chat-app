@@ -1,6 +1,6 @@
 import { Message } from './../interfaces/message';
 import { Observable } from 'rxjs';
-import { Room } from './../interfaces/room';
+import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
@@ -24,6 +24,24 @@ export class RoomService {
 
   getPublic(id: string): Observable<unknown> {
     const params = new HttpParams().append('type', 'public').append('id', id);
+    return this.http.get('room', { params });
+  }
+
+  getRoom(type: string, ...args: string[]): Observable<unknown> {
+    let params;
+    if (type === Visibility.public) {
+      params = new HttpParams().append('type', type).append('id', args[0]);
+    } else if (type === Visibility.protected) {
+      params = new HttpParams()
+        .append('type', type)
+        .append('id', args[0])
+        .append('password', args[1]);
+    } else if (type === Visibility.private) {
+      params = new HttpParams()
+        .append('type', type)
+        .append('id', args[0])
+        .append('userId', args[1]);
+    }
     return this.http.get('room', { params });
   }
 

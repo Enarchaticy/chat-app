@@ -19,7 +19,6 @@ export interface Room {
 export const rooms: Room[] = [
   {
     id: 'a',
-    // name: 'asd',
     visibility: Visibility.private,
     members: [
       { id: '1', name: 'adam' },

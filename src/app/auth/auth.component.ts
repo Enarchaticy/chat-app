@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { User } from './../interfaces/user';
 import { UserService } from './../services/user.service';
@@ -18,7 +19,8 @@ export class AuthComponent implements OnInit {
   userSubs: Subscription;
   constructor(
     private userService: UserService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -37,7 +39,7 @@ export class AuthComponent implements OnInit {
       email: new FormControl('', [Validators.email, Validators.required]),
       name: new FormControl('', Validators.required),
       password: new FormControl('', Validators.required),
-      passwordAgain: new FormControl('', Validators.required),
+      passwordAgain: new FormControl(''),
     });
   }
 
@@ -54,24 +56,41 @@ export class AuthComponent implements OnInit {
     if (this.isLoginActive) {
       this.loginUser();
     } else {
-      const user: User = {};
-      this.createUser(user);
+      if (
+        this.registrationForm.value.password ===
+        this.registrationForm.value.passwordAgain
+      ) {
+        this.createUser({
+          email: this.registrationForm.value.email,
+          name: this.registrationForm.value.name,
+          password: this.registrationForm.value.password,
+        });
+      } else {
+        this.registrationForm.controls.passwordAgain.setErrors({
+          incorrect: true,
+        });
+      }
     }
   }
-
-  /* checkPasswords(): string {
-    if()
-
-    return
-  } */
 
   createUser(user: User): void {
     this.userSubs = this.userService.create(user).subscribe(
       (res: any) => {
-        console.log(res.message);
+        if (res.message === 'Successful registration') {
+          this.snackBar.open('Successful registration!', null, {
+            duration: 2000,
+          });
+          setTimeout(() => {
+            this.setIsLoginActive();
+          }, 1500);
+        } else {
+          this.snackBar.open(res.message, null, {
+            duration: 2000,
+          });
+        }
       },
       (error) => {
-        this.snackBar.open(error.message);
+        this.snackBar.open(error.message, null, { duration: 2000 });
       }
     );
   }
@@ -81,10 +100,18 @@ export class AuthComponent implements OnInit {
       .auth(this.loginForm.value.email, this.loginForm.value.password)
       .subscribe(
         (res: any) => {
-          console.log(res.message);
+          if (res.id) {
+            localStorage.setItem('id', res.id);
+            localStorage.setItem('name', res.name);
+            localStorage.setItem('token', 'generatedToken');
+            this.router.navigate(['/room']);
+          }
+          if (res.message) {
+            this.snackBar.open(res.message, null, { duration: 2000 });
+          }
         },
         (error) => {
-          this.snackBar.open(error.message);
+          this.snackBar.open(error.message, null, { duration: 2000 });
         }
       );
   }

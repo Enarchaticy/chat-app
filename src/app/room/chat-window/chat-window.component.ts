@@ -1,12 +1,13 @@
 import { Message } from './../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { DialogService } from './../dialogs/dialog.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router } from '@angular/router';
 import { Room, Visibility } from './../../interfaces/room';
 import { Subscription } from 'rxjs';
 import { RoomService } from './../../services/room.service';
-import { Component, Input, OnDestroy, OnChanges } from '@angular/core';
+import { Component, Input, OnDestroy, OnChanges, Output, EventEmitter } from '@angular/core';
 import { ComponentPortal } from '@angular/cdk/portal';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-chat-window',
@@ -15,21 +16,22 @@ import { ComponentPortal } from '@angular/cdk/portal';
 })
 export class ChatWindowComponent implements OnDestroy, OnChanges {
   @Input() roomInput: Room;
+  @Output() setDefault = new EventEmitter();
 
-  userId = '1';
-  userName = 'adam';
 
   room: Room;
   messages: any;
+  chat = '';
+
   roomSubs: Subscription;
   passwordSubs: Subscription;
-  chat = '';
   sendMessageSubs: Subscription;
 
   constructor(
     private roomService: RoomService,
     private router: Router,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnChanges(): void {
@@ -39,6 +41,9 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   ngOnDestroy(): void {
     if (this.roomSubs) {
       this.roomSubs.unsubscribe();
+    }
+    if (this.sendMessageSubs) {
+      this.sendMessageSubs.unsubscribe();
     }
   }
 
@@ -67,37 +72,17 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
     }, []);
   }
 
-  getRoomById(): void {
-    // ezt ha van lehetőség javítani
-
-    if (this.roomInput.visibility === Visibility.private) {
-      this.roomSubs = this.roomService
-        .getPrivate(this.roomInput.id, this.userId)
-        .subscribe(
-          (result: Room) => {
-            if (result) {
-              this.room = result;
-              this.messagePrettier();
-            }
-          },
-          (error) => {
-            console.error(error);
-          },
-          () => {
-            if (!this.room) {
-              this.router.navigate(['/room', 'me']);
-            }
-          }
-        );
-    } else if (this.roomInput.visibility === Visibility.protected) {
-      this.openAuthorizeRoomDialog();
-      this.handleClosedDialog();
-    } else {
-      this.roomSubs = this.roomService.getPublic(this.roomInput.id).subscribe(
-        (result: Room) => {
-          this.room = result;
-          if (result) {
+  getRoom(...args: string[]): void {
+    this.roomSubs = this.roomService
+      .getRoom(this.roomInput.visibility, ...args)
+      .subscribe(
+        (result: Room | any) => {
+          if (result && result.id) {
+            this.room = result;
             this.messagePrettier();
+          } else if (result && result.message) {
+            this.snackBar.open(result.message, null, { duration: 2000 });
+            this.setDefault.emit('');
           }
         },
         (error) => {
@@ -105,10 +90,20 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
         },
         () => {
           if (!this.room) {
-            this.router.navigate(['/room', 'me']);
+            this.router.navigate(['/room']);
           }
         }
       );
+  }
+
+  getRoomById(): void {
+    if (this.roomInput.visibility === Visibility.private) {
+      this.getRoom(this.roomInput.id, localStorage.getItem('id'));
+    } else if (this.roomInput.visibility === Visibility.protected) {
+      this.openAuthorizeRoomDialog();
+      this.handleClosedDialog();
+    } else {
+      this.getRoom(this.roomInput.id);
     }
   }
 
@@ -117,7 +112,10 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
       const message = {
         date: new Date(),
         text: this.chat,
-        author: { id: this.userId, name: this.userName },
+        author: {
+          id: localStorage.getItem('id'),
+          name: localStorage.getItem('name'),
+        },
       };
       this.sendMessage(message);
       this.messagePrettier();
@@ -128,9 +126,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   sendMessage(message: Message): void {
     this.sendMessageSubs = this.roomService
       .sendMessage(this.roomInput.id, message)
-      .subscribe((res) => {
-        /* console.log(res); */
-      });
+      .subscribe();
   }
 
   openAuthorizeRoomDialog(): void {
@@ -138,7 +134,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
       AuthorizeRoomDialogComponent,
       null
     );
-    this.dialogService.openAuthorizeRoomDialog<AuthorizeRoomDialogComponent>(
+    this.dialogService.openDialog<AuthorizeRoomDialogComponent>(
       containerPortal
     );
   }
@@ -146,7 +142,15 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   handleClosedDialog(): void {
     this.passwordSubs = this.dialogService.dataSubject.subscribe((password) => {
       if (password && typeof password === 'string') {
-        this.roomSubs = this.roomService
+        console.log(password);
+        this.getRoom(this.roomInput.id, password as string);
+        this.passwordSubs.unsubscribe();
+    /*     if (!this.room || !this.room.id) {
+          console.error('Not authorized!');
+          this.router.navigate(['/room']);
+        } */
+
+        /* this.roomSubs = this.roomService
           .getProtected(this.roomInput.id, password as string)
           .subscribe(
             (result: Room) => {
@@ -160,10 +164,10 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
               this.passwordSubs.unsubscribe();
               if (!this.room || !this.room.id) {
                 console.error('Not authorized!');
-                this.router.navigate(['/room', 'me']);
+                this.router.navigate(['/room']);
               }
             }
-          );
+          ); */
       }
     });
   }

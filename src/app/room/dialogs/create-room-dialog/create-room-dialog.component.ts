@@ -24,9 +24,7 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
   ];
   visibility: Visibility = Visibility.public;
 
-  userId = '1';
   roomSubs: Subscription;
-  userName = 'Adam';
 
   constructor(
     private fb: FormBuilder,
@@ -64,7 +62,7 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
         name: ['', Validators.required],
         members: this.fb.array([]),
       });
-      this.members.push(this.fb.group({ id: [this.userId] }));
+      this.members.push(this.fb.group({ id: [localStorage.getItem('id')] }));
     }
   }
 
@@ -114,8 +112,11 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
   getUsersById(): User[] {
     const members = [];
     this.createRoomForm.value.members.map((member: User) => {
-      if (member.id === this.userId) {
-        members.push({ id: this.userId, name: this.userName });
+      if (member.id === localStorage.getItem('id')) {
+        members.push({
+          id: localStorage.getItem('id'),
+          name: localStorage.getItem('name'),
+        });
       } else {
         this.userService
           .getById(member.id)

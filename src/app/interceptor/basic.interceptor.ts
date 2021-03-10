@@ -123,9 +123,10 @@ export class BasicInterceptor implements HttpInterceptor {
     if (request.method === 'POST' && request.url === 'user/auth') {
       const authUser = users.find(
         (user) =>
-          user.email === request.params.get('email') &&
-          user.password === request.params.get('password')
+          user.email === (request.body as User).email &&
+          user.password === (request.body as User).password
       );
+
       if (authUser) {
         return of(
           new HttpResponse({
@@ -155,32 +156,31 @@ export class BasicInterceptor implements HttpInterceptor {
           status: 200,
           body: room1
             ? { message: 'Message sent successfully' }
-            : { message: 'something went wrong!' },
+            : { message: 'Something went wrong!' },
         })
       );
     }
 
-    /* if (request.method === 'POST' && request.url === 'user/auth') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: users.find(
-            (user) =>
-              user.email === request.params.get('email') &&
-              user.password === request.params.get('password')
-          ),
-        })
-      );
-    } */
-
     if (request.method === 'POST' && request.url === 'user') {
-      users.push(request.body as User);
-      return of(
-        new HttpResponse({
-          status: 201,
-          body: { message: 'Successful registration' },
-        })
-      );
+      if (users.find((user) => user.email === (request.body as User).email)) {
+        return of(
+          new HttpResponse({
+            status: 404,
+            body: { message: 'Email is reserved!' },
+          })
+        );
+      } else {
+        users.push({
+          id: Math.floor(Math.random() * 10000) + '',
+          ...(request.body as User),
+        });
+        return of(
+          new HttpResponse({
+            status: 201,
+            body: { message: 'Successful registration' },
+          })
+        );
+      }
     }
 
     if (request.method === 'POST' && request.url === 'room') {
