@@ -157,15 +157,15 @@ export class RoomComponent implements OnInit, OnDestroy {
   getCreatedRoom(): void {
     this.createdRoomSubs = this.dialogService.dataSubject.subscribe(
       (room: any) => {
+        console.log(room);
         if (room && room.id) {
           this.rooms.push(room);
           this.roomInput = room;
           this.router.navigate(['room']);
+        }
+        if (this.createdRoomSubs) {
           this.createdRoomSubs.unsubscribe();
         }
-      },
-      (error) => {
-        this.createdRoomSubs.unsubscribe();
       }
     );
   }

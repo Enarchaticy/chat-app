@@ -27,9 +27,9 @@ export class DialogService {
       scrollStrategy: this.overlay.scrollStrategies.block(),
     });
     this.overlayRef.attach(componentPortal);
-    this.overlayRef
-      .backdropClick()
-      .subscribe(() => this.closeDialog('Canceled dialog'));
+    this.overlayRef.backdropClick().subscribe(() => {
+      this.closeDialog('Canceled dialog');
+    });
   }
 
   public closeDialog(data?: string | Room): void {

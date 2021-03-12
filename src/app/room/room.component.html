@@ -27,6 +27,6 @@
         <mat-icon>logout</mat-icon>
       </button>
     </mat-toolbar>
-    <app-chat-window [roomInput]="roomInput" (setDefault)="setDefaultRoom()"></app-chat-window>
+    <app-chat-window [roomInput]="roomInput" (setDefault)="setDefaultRoom()" (getDirectMessages)="getDirectMessages($event)"></app-chat-window>
   </mat-sidenav-content>
 </mat-sidenav-container>

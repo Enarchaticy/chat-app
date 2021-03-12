@@ -1,3 +1,4 @@
+import { User } from './../../interfaces/user';
 import { Message } from './../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { DialogService } from './../dialogs/dialog.service';
@@ -5,7 +6,14 @@ import { Router } from '@angular/router';
 import { Room, Visibility } from './../../interfaces/room';
 import { Subscription } from 'rxjs';
 import { RoomService } from './../../services/room.service';
-import { Component, Input, OnDestroy, OnChanges, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnChanges,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -17,7 +25,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class ChatWindowComponent implements OnDestroy, OnChanges {
   @Input() roomInput: Room;
   @Output() setDefault = new EventEmitter();
-
+  @Output() getDirectMessages = new EventEmitter<User>();
 
   room: Room;
   messages: any;
@@ -47,6 +55,13 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
     }
   }
 
+  getDirectMessagesWithUser(user: User): void {
+    if (user.id !== localStorage.getItem('id')) {
+      this.getDirectMessages.emit(user);
+    }
+  }
+
+  // messagePrettier és groupBy csopotosítja a messages tömböt a küldés napja alapján
   messagePrettier(): void {
     this.messages = this.groupBy(
       this.room.messages.map((message) => {
@@ -130,10 +145,7 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   }
 
   openAuthorizeRoomDialog(): void {
-    const containerPortal = new ComponentPortal(
-      AuthorizeRoomDialogComponent,
-      null
-    );
+    const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     this.dialogService.openDialog<AuthorizeRoomDialogComponent>(
       containerPortal
     );
@@ -141,33 +153,10 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
 
   handleClosedDialog(): void {
     this.passwordSubs = this.dialogService.dataSubject.subscribe((password) => {
+      console.log(password);
       if (password && typeof password === 'string') {
-        console.log(password);
         this.getRoom(this.roomInput.id, password as string);
         this.passwordSubs.unsubscribe();
-    /*     if (!this.room || !this.room.id) {
-          console.error('Not authorized!');
-          this.router.navigate(['/room']);
-        } */
-
-        /* this.roomSubs = this.roomService
-          .getProtected(this.roomInput.id, password as string)
-          .subscribe(
-            (result: Room) => {
-              this.room = result;
-              this.messagePrettier();
-            },
-            (error) => {
-              console.error(error);
-            },
-            () => {
-              this.passwordSubs.unsubscribe();
-              if (!this.room || !this.room.id) {
-                console.error('Not authorized!');
-                this.router.navigate(['/room']);
-              }
-            }
-          ); */
       }
     });
   }

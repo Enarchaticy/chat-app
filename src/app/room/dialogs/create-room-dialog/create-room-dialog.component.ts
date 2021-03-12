@@ -44,6 +44,7 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
     }
   }
 
+  // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáadja minket alapértelmezetten a formarrayhoz
   resetForm(event?: any): void {
     if (event) {
       this.visibility = event.value;
@@ -66,6 +67,7 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
     }
   }
 
+  // members és members2 ugyan azt csinálja, a members2-t a HTML-ben tudom használni, a members-t pedig a ts fileban
   members2(): FormArray {
     return this.createRoomForm.get('members') as FormArray;
   }
@@ -87,12 +89,17 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
       this.visibility === Visibility.private &&
       this.createRoomForm.value.members.length < 3
     ) {
-      console.error('You have to add at least 3 person to your group');
+      this.snackBar.open(
+        'You have to add at least 3 person to your group',
+        null,
+        { duration: 2000 }
+      );
     } else {
       this.createRoom(this.finalizeRoom());
     }
   }
 
+  // ha a szobának van passwordja, akkor azt hozzáadja, ha a membersben vannak id-k akkor hozzárendeli a felhasználót hozzá
   finalizeRoom(): Room {
     const room: Room = {
       name: this.createRoomForm.value.name,

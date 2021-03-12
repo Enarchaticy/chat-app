@@ -17,192 +17,176 @@ import { rooms } from '../interfaces/room';
 export class BasicInterceptor implements HttpInterceptor {
   constructor() {}
 
-  queryByRequestType(params: HttpParams): Observable<HttpEvent<unknown>> {
-    if (params.get('type') === 'direct') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: rooms.find(
-            (room: Room) =>
-              room.visibility === Visibility.private &&
-              room.members.some((member) => member.id === params.get('myId')) &&
-              room.members.some(
-                (member) => member.id === params.get('friendId')
-              ) &&
-              room.members.length === 2
-          ),
-        })
-      );
-    }
+  directMessages(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      rooms.find(
+        (room: Room) =>
+          room.visibility === Visibility.private &&
+          room.members.some((member) => member.id === params.get('myId')) &&
+          room.members.some((member) => member.id === params.get('friendId')) &&
+          room.members.length === 2
+      )
+    );
+  }
 
-    if (params.get('type') === 'visible') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: rooms.filter(
-            (room) =>
-              room.visibility === Visibility.public ||
-              room.visibility === Visibility.protected ||
-              (room.visibility === Visibility.private &&
-                room.members.some(
-                  (member) => member.id === params.get('userId')
-                ) &&
-                room.members.length > 2)
-          ),
-        })
-      );
-    }
-    if (params.get('type') === 'private') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: rooms.find(
-            (room) =>
-              room.id === params.get('id') &&
-              room.members.some((member) => member.id === params.get('userId'))
-          ),
-        })
-      );
-    }
-    if (params.get('type') === 'protected') {
-      const authorizedRoom = rooms.find(
+  getVisible(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      rooms.filter(
+        (room) =>
+          room.visibility === Visibility.public ||
+          room.visibility === Visibility.protected ||
+          (room.visibility === Visibility.private &&
+            room.members.some((member) => member.id === params.get('userId')) &&
+            room.members.length > 2)
+      )
+    );
+  }
+
+  getPrivate(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      rooms.find(
         (room) =>
           room.id === params.get('id') &&
-          room.password === params.get('password')
-      );
-      if (authorizedRoom) {
-        return of(
-          new HttpResponse({
-            status: 200,
-            body: authorizedRoom,
-          })
-        );
-      } else {
-        return of(
-          new HttpResponse({
-            status: 401,
-            body: { message: 'Not authorized!' },
-          })
-        );
-      }
-    }
-    if (params.get('type') === 'public') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: rooms.find((room) => room.id === params.get('id')),
-        })
-      );
+          room.members.some((member) => member.id === params.get('userId'))
+      )
+    );
+  }
+
+  getProtected(params: HttpParams): Observable<HttpEvent<unknown>> {
+    const authorizedRoom = rooms.find(
+      (room) =>
+        room.id === params.get('id') && room.password === params.get('password')
+    );
+    if (authorizedRoom) {
+      return this.response(200, authorizedRoom);
+    } else {
+      return this.response(401, { message: 'Not authorized!' });
     }
   }
 
+  getPublic(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      rooms.find((room) => room.id === params.get('id'))
+    );
+  }
+
+  queryByRequestType(params: HttpParams): Observable<HttpEvent<unknown>> {
+    switch (params.get('type')) {
+      case 'direct':
+        return this.directMessages(params);
+      case 'visible':
+        return this.getVisible(params);
+      case 'private':
+        return this.getPrivate(params);
+      case 'protected':
+        return this.getProtected(params);
+      case 'public':
+        return this.getPublic(params);
+    }
+  }
+
+  getUserById(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      users.find((user) => user.id === params.get('id'))
+    );
+  }
+
+  getOnlineUsers(params: HttpParams): Observable<HttpEvent<unknown>> {
+    return this.response(
+      200,
+      users.filter((user) => user.isOnline && user.id !== params.get('id'))
+    );
+  }
+
+  userLogin(userToAuth: User): Observable<HttpEvent<unknown>> {
+    const authUser = users.find(
+      (user) =>
+        user.email === userToAuth.email && user.password === userToAuth.password
+    );
+    if (authUser) {
+      return this.response(200, authUser);
+    } else {
+      return this.response(401, { message: 'Bad username and password' });
+    }
+  }
+
+  createUser(userToCreate: User): Observable<HttpEvent<unknown>> {
+    if (users.find((user) => user.email === userToCreate.email)) {
+      return this.response(404, { message: 'Email is reserved!' });
+    } else {
+      users.push({
+        id: Math.floor(Math.random() * 10000) + '',
+        ...userToCreate,
+      });
+      return this.response(201, { message: 'Successful registration' });
+    }
+  }
+
+  sendMessage(
+    params: HttpParams,
+    message: Message
+  ): Observable<HttpEvent<unknown>> {
+    const room1: Room = rooms.find(
+      (room: Room) => room.id === params.get('id')
+    );
+    if (room1) {
+      room1.messages.push(message);
+    }
+    return this.response(
+      200,
+      room1
+        ? { message: 'Message sent successfully' }
+        : { message: 'Something went wrong!' }
+    );
+  }
+
+  createRoom(room: Room): Observable<HttpEvent<unknown>> {
+    rooms.push({
+      ...room,
+      id: Math.floor(Math.random() * 10000) + '',
+      messages: [],
+    });
+    return this.response(201, {
+      message: 'Successful room registration',
+      room: rooms[rooms.length - 1],
+    });
+  }
+
+  // kérés típus és url alapján a megfelelő választ adja vissza a mockolt adatokból
   intercept(
     request: HttpRequest<unknown>,
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     if (request.method === 'GET' && request.url === 'user') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: users.find((user) => user.id === request.params.get('id')),
-        })
-      );
-    }
-
-    if (request.method === 'GET' && request.url === 'user/online') {
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: users.filter(
-            (user) => user.isOnline && user.id !== request.params.get('id')
-          ),
-        })
-      );
-    }
-
-    if (request.method === 'POST' && request.url === 'user/auth') {
-      const authUser = users.find(
-        (user) =>
-          user.email === (request.body as User).email &&
-          user.password === (request.body as User).password
-      );
-
-      if (authUser) {
-        return of(
-          new HttpResponse({
-            status: 200,
-            body: authUser,
-          })
-        );
-      } else {
-        return of(
-          new HttpResponse({
-            status: 401,
-            body: { message: 'Bad username and password' },
-          })
-        );
-      }
-    }
-
-    if (request.method === 'PUT' && request.url === 'room') {
-      const room1: Room = rooms.find(
-        (room: Room) => room.id === request.params.get('id')
-      );
-      if (room1) {
-        room1.messages.push(request.body as Message);
-      }
-      return of(
-        new HttpResponse({
-          status: 200,
-          body: room1
-            ? { message: 'Message sent successfully' }
-            : { message: 'Something went wrong!' },
-        })
-      );
-    }
-
-    if (request.method === 'POST' && request.url === 'user') {
-      if (users.find((user) => user.email === (request.body as User).email)) {
-        return of(
-          new HttpResponse({
-            status: 404,
-            body: { message: 'Email is reserved!' },
-          })
-        );
-      } else {
-        users.push({
-          id: Math.floor(Math.random() * 10000) + '',
-          ...(request.body as User),
-        });
-        return of(
-          new HttpResponse({
-            status: 201,
-            body: { message: 'Successful registration' },
-          })
-        );
-      }
-    }
-
-    if (request.method === 'POST' && request.url === 'room') {
-      rooms.push({
-        ...(request.body as Room),
-        id: Math.floor(Math.random() * 10000) + '',
-        messages: [],
-      });
-      return of(
-        new HttpResponse({
-          status: 201,
-          body: {
-            message: 'Successful room registration',
-            room: rooms[rooms.length - 1],
-          },
-        })
-      );
-    }
-
-    if (request.method === 'GET' && request.url === 'room') {
+      return this.getUserById(request.params);
+    } else if (request.method === 'GET' && request.url === 'user/online') {
+      return this.getOnlineUsers(request.params);
+    } else if (request.method === 'POST' && request.url === 'user/auth') {
+      return this.userLogin(request.body as User);
+    } else if (request.method === 'POST' && request.url === 'user') {
+      return this.createUser(request.body as User);
+    } else if (request.method === 'PUT' && request.url === 'room') {
+      return this.sendMessage(request.params, request.body as Message);
+    } else if (request.method === 'POST' && request.url === 'room') {
+      return this.createRoom(request.body as Room);
+    } else if (request.method === 'GET' && request.url === 'room') {
       return this.queryByRequestType(request.params);
     }
+
     return next.handle(request);
+  }
+
+  response(status: number, body: any): Observable<HttpEvent<unknown>> {
+    return of(
+      new HttpResponse({
+        status,
+        body,
+      })
+    );
   }
 }

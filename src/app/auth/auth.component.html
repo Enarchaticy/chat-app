@@ -1,5 +1,4 @@
 <div class="background">
-
   <mat-card class="card">
     <mat-card-header>
       <mat-card-subtitle>Welcome on chat-app! You can {{isLoginActive?"log in":"sign in"}} here!</mat-card-subtitle>
@@ -55,7 +54,7 @@
         (click)="submit()">Submit</button>
     </mat-card-actions>
 
-    <p>{{isLoginActive?"You don't have an account?":"Are you have an account?"}} <span
+    <p>{{isLoginActive?"You don't have an account?":"Are you have an account?"}} <span class="link-lookalike"
         (click)="setIsLoginActive()">{{isLoginActive?"Sign in":"Log in"}} here!</span></p>
 
   </mat-card>
