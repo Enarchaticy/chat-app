@@ -13,6 +13,9 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MatSelectModule } from '@angular/material/select';
 import { ReactiveFormsModule } from '@angular/forms';
 
+import { AngularFireModule } from '@angular/fire';
+import { AngularFireAuthModule } from '@angular/fire/auth';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -27,6 +30,8 @@ import { ReactiveFormsModule } from '@angular/forms';
     MatSelectModule,
     MatSnackBarModule,
     ReactiveFormsModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireAuthModule,
   ],
   providers: [
     {

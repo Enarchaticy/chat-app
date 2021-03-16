@@ -153,7 +153,6 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
 
   handleClosedDialog(): void {
     this.passwordSubs = this.dialogService.dataSubject.subscribe((password) => {
-      console.log(password);
       if (password && typeof password === 'string') {
         this.getRoom(this.roomInput.id, password as string);
         this.passwordSubs.unsubscribe();

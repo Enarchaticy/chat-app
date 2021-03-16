@@ -1,3 +1,4 @@
+import { UserService } from './../services/user.service';
 import { Injectable } from '@angular/core';
 import {
   CanActivate,
@@ -12,7 +13,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private userService: UserService) {}
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
@@ -21,7 +22,7 @@ export class AuthGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    if (localStorage.getItem('token') !== 'generatedToken') {
+    if (!this.userService.isLoggedIn) {
       localStorage.clear();
       this.router.navigate(['/auth']);
       return false;

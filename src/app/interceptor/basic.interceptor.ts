@@ -1,3 +1,4 @@
+import { UserService } from './../services/user.service';
 import { Message } from './../interfaces/message';
 import { Visibility, Room } from './../interfaces/room';
 import { users, User } from './../interfaces/user';
@@ -15,7 +16,7 @@ import { rooms } from '../interfaces/room';
 
 @Injectable()
 export class BasicInterceptor implements HttpInterceptor {
-  constructor() {}
+  constructor(private userService: UserService) {}
 
   directMessages(params: HttpParams): Observable<HttpEvent<unknown>> {
     return this.response(
@@ -89,10 +90,13 @@ export class BasicInterceptor implements HttpInterceptor {
     }
   }
 
-  getUserById(params: HttpParams): Observable<HttpEvent<unknown>> {
+  getByIdOrEmail(params: HttpParams): Observable<HttpEvent<unknown>> {
     return this.response(
       200,
-      users.find((user) => user.id === params.get('id'))
+      users.find(
+        (user) =>
+          user.id === params.get('id') || user.email === params.get('id')
+      )
     );
   }
 
@@ -103,16 +107,29 @@ export class BasicInterceptor implements HttpInterceptor {
     );
   }
 
-  userLogin(userToAuth: User): Observable<HttpEvent<unknown>> {
-    const authUser = users.find(
-      (user) =>
-        user.email === userToAuth.email && user.password === userToAuth.password
-    );
-    if (authUser) {
-      return this.response(200, authUser);
-    } else {
-      return this.response(401, { message: 'Bad username and password' });
+  userLogin(): Observable<HttpEvent<unknown>> {
+    let authUser: User;
+    if (this.userService.isLoggedIn) {
+      authUser = users.find(
+        (user) => user.email === JSON.parse(localStorage.getItem('user')).email
+      );
+      if (authUser) {
+        return this.response(200, authUser);
+      } else {
+        this.createUserForThirdPartyAuth();
+        return this.response(200, users[users.length - 1]);
+      }
     }
+    return this.response(400, 'Bad request!');
+  }
+
+  createUserForThirdPartyAuth(): void {
+    users.push({
+      id: Math.floor(Math.random() * 10000) + '',
+      email: JSON.parse(localStorage.getItem('user')).email,
+      name: JSON.parse(localStorage.getItem('user')).displayName,
+      isOnline: true,
+    });
   }
 
   createUser(userToCreate: User): Observable<HttpEvent<unknown>> {
@@ -163,11 +180,11 @@ export class BasicInterceptor implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     if (request.method === 'GET' && request.url === 'user') {
-      return this.getUserById(request.params);
+      return this.getByIdOrEmail(request.params);
     } else if (request.method === 'GET' && request.url === 'user/online') {
       return this.getOnlineUsers(request.params);
     } else if (request.method === 'POST' && request.url === 'user/auth') {
-      return this.userLogin(request.body as User);
+      return this.userLogin();
     } else if (request.method === 'POST' && request.url === 'user') {
       return this.createUser(request.body as User);
     } else if (request.method === 'PUT' && request.url === 'room') {

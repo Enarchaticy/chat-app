@@ -67,11 +67,6 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
     }
   }
 
-  // members és members2 ugyan azt csinálja, a members2-t a HTML-ben tudom használni, a members-t pedig a ts fileban
-  members2(): FormArray {
-    return this.createRoomForm.get('members') as FormArray;
-  }
-
   get members(): FormArray {
     return this.createRoomForm.get('members') as FormArray;
   }
@@ -109,14 +104,14 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
       room.password = this.createRoomForm.value.password;
     }
     if (this.createRoomForm.value.members) {
-      room.members = this.getUsersById();
+      room.members = this.getUsersByIdOrEmail();
       return room;
     } else {
       return room;
     }
   }
 
-  getUsersById(): User[] {
+  getUsersByIdOrEmail(): User[] {
     const members = [];
     this.createRoomForm.value.members.map((member: User) => {
       if (member.id === localStorage.getItem('id')) {
@@ -126,7 +121,7 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
         });
       } else {
         this.userService
-          .getById(member.id)
+          .getByIdOrEmail(member.id)
           .pipe(first())
           .subscribe(
             (res) => {

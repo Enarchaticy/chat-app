@@ -26,7 +26,7 @@
     </mat-form-field>
 
     <div *ngIf="visibility=='private'" formArrayName="members">
-      <div *ngFor="let member of members2().controls; let i=index">
+      <div *ngFor="let member of members.controls; let i=index">
         <div [formGroupName]="i">
 
           <mat-form-field class="full-width">

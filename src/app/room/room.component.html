@@ -22,11 +22,12 @@
         *ngIf="isHandset$ | async">
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
-      <span>chat-app</span>
-      <button class="logout" mat-icon-button type="button" (click)="logout()">
+      <span>Chat App</span>
+      <button class="logout" mat-icon-button type="button" (click)="userService.logout()">
         <mat-icon>logout</mat-icon>
       </button>
     </mat-toolbar>
-    <app-chat-window [roomInput]="roomInput" (setDefault)="setDefaultRoom()" (getDirectMessages)="getDirectMessages($event)"></app-chat-window>
+    <app-chat-window [roomInput]="roomInput" (setDefault)="setDefaultRoom()"
+      (getDirectMessages)="getDirectMessages($event)"></app-chat-window>
   </mat-sidenav-content>
 </mat-sidenav-container>

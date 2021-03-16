@@ -1,4 +1,3 @@
-import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { User } from './../interfaces/user';
 import { UserService } from './../services/user.service';
@@ -20,7 +19,6 @@ export class AuthComponent implements OnInit {
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar,
-    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -54,7 +52,7 @@ export class AuthComponent implements OnInit {
 
   submit(): void {
     if (this.isLoginActive) {
-      this.loginUser();
+      this.loginUserWithEmailAndPassword();
     } else {
       if (
         this.registrationForm.value.password ===
@@ -74,45 +72,31 @@ export class AuthComponent implements OnInit {
   }
 
   createUser(user: User): void {
-    this.userSubs = this.userService.create(user).subscribe(
-      (res: any) => {
-        if (res.message === 'Successful registration') {
-          this.snackBar.open('Successful registration!', null, {
-            duration: 2000,
-          });
-          setTimeout(() => {
-            this.setIsLoginActive();
-          }, 1500);
-        } else {
-          this.snackBar.open(res.message, null, {
-            duration: 2000,
-          });
-        }
-      },
-      (error) => {
-        this.snackBar.open(error.message, null, { duration: 2000 });
-      }
-    );
+    this.userService
+      .register(user.email, user.password)
+      .then(() => {
+        this.userSubs = this.userService.create(user).subscribe();
+      })
+      .catch((err) => {
+        this.snackBar.open(err.message, null, {
+          duration: 2000,
+        });
+      });
   }
 
-  loginUser(): void {
-    this.userSubs = this.userService
-      .auth(this.loginForm.value.email, this.loginForm.value.password)
-      .subscribe(
-        (res: any) => {
-          if (res.id) {
-            localStorage.setItem('id', res.id);
-            localStorage.setItem('name', res.name);
-            localStorage.setItem('token', 'generatedToken');
-            this.router.navigate(['/room']);
-          }
-          if (res.message) {
-            this.snackBar.open(res.message, null, { duration: 2000 });
-          }
-        },
-        (error) => {
-          this.snackBar.open(error.message, null, { duration: 2000 });
-        }
-      );
+  async loginWithFacebook(): Promise<void> {
+    await this.userService.facebookAuth();
+  }
+
+  async loginWithGoogle(): Promise<any> {
+    await this.userService.googleAuth();
+  }
+
+  loginUserWithEmailAndPassword(): void {
+    this.userService
+      .login(this.loginForm.value.email, this.loginForm.value.password)
+      .catch(() => {
+        this.snackBar.open('Wrong credentials!', null, { duration: 2000 });
+      });
   }
 }

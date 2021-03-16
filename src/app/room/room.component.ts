@@ -40,7 +40,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   constructor(
     private breakpointObserver: BreakpointObserver,
     private router: Router,
-    private userService: UserService,
+    public userService: UserService,
     private roomService: RoomService,
     private dialogService: DialogService
   ) {}
@@ -73,11 +73,6 @@ export class RoomComponent implements OnInit, OnDestroy {
 
   setDefaultRoom(): void {
     this.roomInput = { id: 'me', visibility: Visibility.public };
-  }
-
-  logout(): void {
-    localStorage.clear();
-    this.router.navigate(['/auth']);
   }
 
   openCreateRoomDialog(): void {
@@ -157,7 +152,6 @@ export class RoomComponent implements OnInit, OnDestroy {
   getCreatedRoom(): void {
     this.createdRoomSubs = this.dialogService.dataSubject.subscribe(
       (room: any) => {
-        console.log(room);
         if (room && room.id) {
           this.rooms.push(room);
           this.roomInput = room;
