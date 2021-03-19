@@ -5,7 +5,7 @@
 </ng-container>
 <ng-template #notMyself>
   <div class="asd">
-    <ng-container *ngIf="room && room.messages && room.messages.length>0; else noRoom">
+    <ng-container *ngIf="(room$|async) && room && room.messages.length>0; else noRoom">
       <div *ngFor="let messagesByDate of messages | keyvalue" class="chat">
         <p class="date-center">{{messagesByDate.key}}</p>
         <div *ngFor="let message of messagesByDate.value">

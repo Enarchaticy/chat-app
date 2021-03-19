@@ -1,4 +1,3 @@
-import { Subscription } from 'rxjs';
 import { User } from './../interfaces/user';
 import { UserService } from './../services/user.service';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
@@ -15,10 +14,9 @@ export class AuthComponent implements OnInit {
   registrationForm: FormGroup;
 
   isLoginActive = true;
-  userSubs: Subscription;
   constructor(
     private userService: UserService,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -72,24 +70,19 @@ export class AuthComponent implements OnInit {
   }
 
   createUser(user: User): void {
-    this.userService
-      .register(user.email, user.password)
-      .then(() => {
-        this.userSubs = this.userService.create(user).subscribe();
-      })
-      .catch((err) => {
-        this.snackBar.open(err.message, null, {
-          duration: 2000,
-        });
+    this.userService.register(user.email, user.password).catch((err) => {
+      this.snackBar.open(err.message, null, {
+        duration: 2000,
       });
+    });
   }
 
   async loginWithFacebook(): Promise<void> {
-    await this.userService.facebookAuth();
+    await this.userService.facebookAuth().then();
   }
 
   async loginWithGoogle(): Promise<any> {
-    await this.userService.googleAuth();
+    await this.userService.googleAuth().then();
   }
 
   loginUserWithEmailAndPassword(): void {

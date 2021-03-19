@@ -6,10 +6,10 @@ import { User } from './../interfaces/user';
 import { RoomService } from './../services/room.service';
 import { UserService } from './../services/user.service';
 import { Router } from '@angular/router';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable, Subscription } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, shareReplay, tap, first, take } from 'rxjs/operators';
 import { Visibility } from '../interfaces/room';
 
 @Component({
@@ -17,7 +17,7 @@ import { Visibility } from '../interfaces/room';
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.scss'],
 })
-export class RoomComponent implements OnInit, OnDestroy {
+export class RoomComponent implements OnInit {
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(
@@ -25,16 +25,10 @@ export class RoomComponent implements OnInit, OnDestroy {
       shareReplay()
     );
 
-  routerSubs: Subscription;
-  userSubs: Subscription;
-  visibleRoomsSubs: Subscription;
-  openedRoomSubs: Subscription;
-  directMessagesSubs: Subscription;
-  createRoomSubs: Subscription;
-  createdRoomSubs: Subscription;
+  onlineUsers$: Observable<unknown>;
+  visibleRooms$: Observable<unknown>;
 
   roomInput: Room = { name: 'me', id: 'me', visibility: Visibility.public };
-  onlineUsers: User[] = [];
   rooms: Room[];
 
   constructor(
@@ -50,27 +44,6 @@ export class RoomComponent implements OnInit, OnDestroy {
     this.getVisibleRooms();
   }
 
-  ngOnDestroy(): void {
-    if (this.routerSubs) {
-      this.routerSubs.unsubscribe();
-    }
-    if (this.userSubs) {
-      this.userSubs.unsubscribe();
-    }
-    if (this.visibleRoomsSubs) {
-      this.visibleRoomsSubs.unsubscribe();
-    }
-    if (this.openedRoomSubs) {
-      this.openedRoomSubs.unsubscribe();
-    }
-    if (this.directMessagesSubs) {
-      this.directMessagesSubs.unsubscribe();
-    }
-    if (this.createRoomSubs) {
-      this.createRoomSubs.unsubscribe();
-    }
-  }
-
   setDefaultRoom(): void {
     this.roomInput = { id: 'me', visibility: Visibility.public };
   }
@@ -82,34 +55,19 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   getOnlineUsers(): void {
-    this.userSubs = this.userService
-      .getOnline(localStorage.getItem('id'))
-      .subscribe(
-        (result: User[]) => {
-          this.onlineUsers = result;
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+    this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
   }
 
   getVisibleRooms(): void {
-    this.visibleRoomsSubs = this.roomService
+    this.visibleRooms$ = this.roomService
       .getVisible(localStorage.getItem('id'))
-      .subscribe(
-        (result: Room[]) => {
-          this.rooms = result;
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+      .pipe(tap((res: Room[]) => (this.rooms = res)));
   }
 
   getDirectMessages(friend: User): void {
-    this.directMessagesSubs = this.roomService
+    this.roomService
       .getDirectMessages(localStorage.getItem('id'), friend.id)
+      .pipe(first())
       .subscribe(
         (result: Room) => {
           if (result) {
@@ -126,7 +84,7 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   createRoomForDirectMessages(friend: User): void {
-    this.createRoomSubs = this.roomService
+    this.roomService
       .create({
         visibility: Visibility.private,
         messages: [],
@@ -138,6 +96,7 @@ export class RoomComponent implements OnInit, OnDestroy {
           },
         ],
       })
+      .pipe(first())
       .subscribe(
         (result: any) => {
           this.roomInput = result.room;
@@ -150,17 +109,12 @@ export class RoomComponent implements OnInit, OnDestroy {
   }
 
   getCreatedRoom(): void {
-    this.createdRoomSubs = this.dialogService.dataSubject.subscribe(
-      (room: any) => {
-        if (room && room.id) {
-          this.rooms.push(room);
-          this.roomInput = room;
-          this.router.navigate(['room']);
-        }
-        if (this.createdRoomSubs) {
-          this.createdRoomSubs.unsubscribe();
-        }
+    this.dialogService.dataSubject.pipe(take(2)).subscribe((room: any) => {
+      if (room && room.id) {
+        this.rooms.push(room);
+        this.roomInput = room;
+        this.router.navigate(['room']);
       }
-    );
+    });
   }
 }

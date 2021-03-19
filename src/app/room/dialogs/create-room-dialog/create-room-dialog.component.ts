@@ -2,11 +2,10 @@ import { DialogService } from './../dialog.service';
 import { User } from './../../../interfaces/user';
 import { first } from 'rxjs/operators';
 import { UserService } from './../../../services/user.service';
-import { Subscription } from 'rxjs';
 import { RoomService } from './../../../services/room.service';
 import { Visibility, Room } from './../../../interfaces/room';
 import { FormGroup, Validators, FormArray, FormBuilder } from '@angular/forms';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -14,7 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './create-room-dialog.component.html',
   styleUrls: ['./create-room-dialog.component.scss'],
 })
-export class CreateRoomDialogComponent implements OnInit, OnDestroy {
+export class CreateRoomDialogComponent implements OnInit {
   createRoomForm: FormGroup;
 
   selectVisibility: Visibility[] = [
@@ -24,7 +23,6 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
   ];
   visibility: Visibility = Visibility.public;
 
-  roomSubs: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -36,12 +34,6 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.resetForm();
-  }
-
-  ngOnDestroy(): void {
-    if (this.roomSubs) {
-      this.roomSubs.unsubscribe();
-    }
   }
 
   // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáadja minket alapértelmezetten a formarrayhoz
@@ -141,19 +133,14 @@ export class CreateRoomDialogComponent implements OnInit, OnDestroy {
   }
 
   createRoom(room: Room): void {
-    this.roomSubs = this.roomService.create(room).subscribe(
-      (result: any) => {
+    this.roomService
+      .create(room)
+      .pipe(first())
+      .subscribe((result: any) => {
         this.snackBar.open(result.message, null, {
           duration: 2000,
         });
         this.dialogService.closeDialog(result.room);
-      },
-      (error) => {
-        this.snackBar.open('Something went wrong!', null, {
-          duration: 2000,
-        });
-        console.error(error);
-      }
-    );
+      });
   }
 }

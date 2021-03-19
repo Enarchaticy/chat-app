@@ -2,27 +2,26 @@ import { User } from './../../interfaces/user';
 import { Message } from './../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { DialogService } from './../dialogs/dialog.service';
-import { Router } from '@angular/router';
 import { Room, Visibility } from './../../interfaces/room';
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { RoomService } from './../../services/room.service';
 import {
   Component,
   Input,
-  OnDestroy,
   OnChanges,
   Output,
   EventEmitter,
 } from '@angular/core';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { tap, first, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-chat-window',
   templateUrl: './chat-window.component.html',
   styleUrls: ['./chat-window.component.scss'],
 })
-export class ChatWindowComponent implements OnDestroy, OnChanges {
+export class ChatWindowComponent implements OnChanges {
   @Input() roomInput: Room;
   @Output() setDefault = new EventEmitter();
   @Output() getDirectMessages = new EventEmitter<User>();
@@ -31,28 +30,16 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   messages: any;
   chat = '';
 
-  roomSubs: Subscription;
-  passwordSubs: Subscription;
-  sendMessageSubs: Subscription;
+  room$: Observable<Room>;
 
   constructor(
     private roomService: RoomService,
-    private router: Router,
     private dialogService: DialogService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnChanges(): void {
     this.getRoomById();
-  }
-
-  ngOnDestroy(): void {
-    if (this.roomSubs) {
-      this.roomSubs.unsubscribe();
-    }
-    if (this.sendMessageSubs) {
-      this.sendMessageSubs.unsubscribe();
-    }
   }
 
   getDirectMessagesWithUser(user: User): void {
@@ -62,9 +49,9 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   }
 
   // messagePrettier és groupBy csopotosítja a messages tömböt a küldés napja alapján
-  messagePrettier(): void {
+  messagePrettier(room: Room): void {
     this.messages = this.groupBy(
-      this.room.messages.map((message) => {
+      room.messages.map((message) => {
         return {
           ...message,
           timestamp:
@@ -88,26 +75,20 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   }
 
   getRoom(...args: string[]): void {
-    this.roomSubs = this.roomService
+    this.room$ = this.roomService
       .getRoom(this.roomInput.visibility, ...args)
-      .subscribe(
-        (result: Room | any) => {
-          if (result && result.id) {
-            this.room = result;
-            this.messagePrettier();
-          } else if (result && result.message) {
-            this.snackBar.open(result.message, null, { duration: 2000 });
-            this.setDefault.emit('');
+      .pipe(
+        tap((res: any) => {
+          if (res && res.messages) {
+            this.room = res;
+            this.messagePrettier(res);
+          } else {
+            if (res) {
+              this.snackBar.open(res.message, null, { duration: 2000 });
+              this.setDefault.emit('');
+            }
           }
-        },
-        (error) => {
-          console.error(error);
-        },
-        () => {
-          if (!this.room) {
-            this.router.navigate(['/room']);
-          }
-        }
+        })
       );
   }
 
@@ -133,14 +114,15 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
         },
       };
       this.sendMessage(message);
-      this.messagePrettier();
+      this.messagePrettier(this.room);
     }
     this.chat = '';
   }
 
   sendMessage(message: Message): void {
-    this.sendMessageSubs = this.roomService
+    this.roomService
       .sendMessage(this.roomInput.id, message)
+      .pipe(first())
       .subscribe();
   }
 
@@ -152,10 +134,9 @@ export class ChatWindowComponent implements OnDestroy, OnChanges {
   }
 
   handleClosedDialog(): void {
-    this.passwordSubs = this.dialogService.dataSubject.subscribe((password) => {
+    this.dialogService.dataSubject.pipe(take(2)).subscribe((password) => {
       if (password && typeof password === 'string') {
         this.getRoom(this.roomInput.id, password as string);
-        this.passwordSubs.unsubscribe();
       }
     });
   }
