@@ -34,7 +34,7 @@ export class RoomComponent implements OnInit {
   constructor(
     private breakpointObserver: BreakpointObserver,
     private router: Router,
-    public userService: UserService,
+    private userService: UserService,
     private roomService: RoomService,
     private dialogService: DialogService
   ) {}
@@ -108,8 +108,28 @@ export class RoomComponent implements OnInit {
       );
   }
 
+  logout() {
+    const token = JSON.parse(localStorage.getItem('user'));
+    this.userService
+      .logout()
+      .pipe(first())
+      .subscribe((res) => {
+        const user: User = {
+          name: token.displayName,
+          email: token.email,
+          isOnline: false,
+        };
+        this.userService
+          .createOrUpdateUser(token.uid, user)
+          .pipe(first())
+          .subscribe();
+        localStorage.clear();
+        this.router.navigate(['/auth']);
+      });
+  }
+
   getCreatedRoom(): void {
-    this.dialogService.dataSubject.pipe(take(2)).subscribe((room: any) => {
+    this.dialogService.dataSubject$.pipe(take(2)).subscribe((room: any) => {
       if (room && room.id) {
         this.rooms.push(room);
         this.roomInput = room;

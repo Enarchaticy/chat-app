@@ -2,16 +2,17 @@ import { Room } from './../../interfaces/room';
 import { Injectable } from '@angular/core';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DialogService {
   private overlayRef: OverlayRef;
-  public dataSubject: BehaviorSubject<
+  private dataSubject: Subject<
     string | boolean | Room
-  > = new BehaviorSubject(false);
+  > = new Subject();
+  public dataSubject$: Observable<string | boolean | Room> = this.dataSubject.asObservable();
 
   constructor(private overlay: Overlay) {}
 

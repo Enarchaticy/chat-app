@@ -134,7 +134,7 @@ export class ChatWindowComponent implements OnChanges {
   }
 
   handleClosedDialog(): void {
-    this.dialogService.dataSubject.pipe(take(2)).subscribe((password) => {
+    this.dialogService.dataSubject$.pipe(take(2)).subscribe((password) => {
       if (password && typeof password === 'string') {
         this.getRoom(this.roomInput.id, password as string);
       }

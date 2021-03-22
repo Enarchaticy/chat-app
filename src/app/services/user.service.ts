@@ -1,6 +1,6 @@
 import { first } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { User } from '../interfaces/user';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -26,7 +26,7 @@ export class UserService {
           email: token.email,
           isOnline: true,
         };
-        this.createOrUpdateUser(token.uid, user).then();
+        this.createOrUpdateUser(token.uid, user).pipe(first()).subscribe();
       } else {
         localStorage.setItem('user', null);
       }
@@ -36,46 +36,46 @@ export class UserService {
           if (res.id) {
             console.log(res);
             localStorage.setItem('id', res.id);
-            localStorage.setItem('name', res.name);
+            if (res.name && res.name !== 'null') {
+              localStorage.setItem('name', res.name);
+            }
+            // localStorage.setItem('name', res.name);
             this.router.navigate(['/room']);
           }
         });
     });
   }
 
-  async register(email: string, password: string): Promise<void> {
-    await this.afAuth.createUserWithEmailAndPassword(email, password);
+  register(email: string, password: string): Observable<unknown> {
+    return from(this.afAuth.createUserWithEmailAndPassword(email, password));
   }
 
-  async login(email: string, password: string): Promise<void> {
-    await this.afAuth.signInWithEmailAndPassword(email, password);
+  updateName(user, displayName: string): Observable<unknown> {
+    return from(user.updateProfile({ displayName }));
   }
 
-  async facebookAuth(): Promise<any> {
-    await this.thirdPartyLogin(new firebase.auth.FacebookAuthProvider());
+  login(email: string, password: string): Observable<unknown> {
+    return from(this.afAuth.signInWithEmailAndPassword(email, password));
   }
 
-  async googleAuth(): Promise<any> {
-    await this.thirdPartyLogin(new firebase.auth.GoogleAuthProvider());
+  facebookAuth(): Observable<unknown> {
+    return from(this.thirdPartyLogin(new firebase.auth.FacebookAuthProvider()));
   }
 
-  async logout(): Promise<void> {
-    await this.afAuth.signOut();
-    const token = JSON.parse(localStorage.getItem('user'));
-    const user: User = {
-      name: token.displayName,
-      email: token.email,
-      isOnline: false,
-    };
-    this.createOrUpdateUser(token.uid, user).then();
-    localStorage.clear();
-    this.router.navigate(['/auth']);
+  googleAuth(): Observable<unknown> {
+    return this.thirdPartyLogin(new firebase.auth.GoogleAuthProvider());
   }
 
-  async thirdPartyLogin(provider): Promise<any> {
-    return await this.afAuth.signInWithPopup(provider).catch((error) => {
-      console.error(error);
-    });
+  logout(): Observable<unknown> {
+    return from(this.afAuth.signOut());
+  }
+
+  thirdPartyLogin(provider): Observable<unknown> {
+    return from(
+      this.afAuth.signInWithPopup(provider).catch((error) => {
+        console.error(error);
+      })
+    );
   }
 
   get isLoggedIn(): boolean {
@@ -101,17 +101,17 @@ export class UserService {
     return this.http.get('user/online', { params });
   }
 
-  createOrUpdateUser(id: string, user: User): any {
-    return this.firestore.collection('user').doc(id).set(user);
+  createOrUpdateUser(id: string, user: User): Observable<unknown> {
+    return from(this.firestore.collection('user').doc(id).set(user));
   }
 
-  getUserByIdOrEmail(id: string): any {
+  getUserByIdOrEmail(id: string): Observable<unknown> {
     return this.firestore
       .collection('user', (ref) => ref.where('email', '==', 'bence@valami.hu'))
       .valueChanges();
   }
 
-  getOnlineUsers(): any {
+  getOnlineUsers(): Observable<unknown> {
     return this.firestore
       .collection('user', (ref) => ref.where('isOnline', '==', true))
       .valueChanges();

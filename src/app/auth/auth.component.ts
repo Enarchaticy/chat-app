@@ -3,6 +3,8 @@ import { UserService } from './../services/user.service';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { first, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-auth',
@@ -14,6 +16,11 @@ export class AuthComponent implements OnInit {
   registrationForm: FormGroup;
 
   isLoginActive = true;
+
+  googleLogin$: Observable<unknown>;
+  facebookLogin$: Observable<unknown>;
+  credentialLogin$: Observable<unknown>;
+
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar
@@ -70,26 +77,35 @@ export class AuthComponent implements OnInit {
   }
 
   createUser(user: User): void {
-    this.userService.register(user.email, user.password).catch((err) => {
-      this.snackBar.open(err.message, null, {
-        duration: 2000,
+    this.userService
+      .register(user.email, user.password)
+      .pipe(first())
+      .subscribe((res: any) => {
+        this.userService
+          .updateName(res.user, user.name)
+          .pipe(first())
+          .subscribe();
       });
-    });
   }
 
-  async loginWithFacebook(): Promise<void> {
-    await this.userService.facebookAuth().then();
+  loginWithFacebook() {
+    this.userService.facebookAuth().pipe(first()).subscribe();
   }
 
-  async loginWithGoogle(): Promise<any> {
-    await this.userService.googleAuth().then();
+  loginWithGoogle() {
+    this.userService.googleAuth().pipe(first()).subscribe();
   }
 
   loginUserWithEmailAndPassword(): void {
     this.userService
       .login(this.loginForm.value.email, this.loginForm.value.password)
-      .catch(() => {
-        this.snackBar.open('Wrong credentials!', null, { duration: 2000 });
-      });
+      .pipe(
+        first(),
+        catchError((err) => {
+          this.snackBar.open('Wrong credentials', null, { duration: 2000 });
+          return err;
+        })
+      )
+      .subscribe();
   }
 }
