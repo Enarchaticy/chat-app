@@ -1,0 +1,15 @@
+<ng-container *ngIf="(room$|async) && room && room.messages.length>0; else noRoom">
+  <div *ngFor="let messagesByDate of messages | keyvalue" class="chat">
+    <p class="date-center">{{messagesByDate.key}}</p>
+    <div *ngFor="let message of messagesByDate.value">
+      <span class="name" (click)="getDirectMessagesWithUser(message.author)">{{message.author.name}}</span>
+      <span class="time">{{message.date|date: 'HH:mm'}}</span>
+      <p class="text">{{message.text}}</p>
+    </div>
+  </div>
+</ng-container>
+<ng-template #noRoom>
+  <mat-card>
+    Write your first message!
+  </mat-card>
+</ng-template>

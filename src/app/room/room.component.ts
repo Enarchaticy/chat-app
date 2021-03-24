@@ -129,7 +129,7 @@ export class RoomComponent implements OnInit {
   }
 
   getCreatedRoom(): void {
-    this.dialogService.dataSubject$.pipe(take(2)).subscribe((room: any) => {
+    this.dialogService.roomSubject$.pipe(first()).subscribe((room: any) => {
       if (room && room.id) {
         this.rooms.push(room);
         this.roomInput = room;

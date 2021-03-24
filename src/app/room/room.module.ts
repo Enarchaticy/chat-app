@@ -16,6 +16,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
+import { MessagesComponent } from './chat-window/messages/messages.component';
+import { RoomFormComponent } from './dialogs/create-room-dialog/room-form/room-form.component';
 
 const routes: Routes = [
   {
@@ -30,6 +32,8 @@ const routes: Routes = [
     ChatWindowComponent,
     CreateRoomDialogComponent,
     AuthorizeRoomDialogComponent,
+    MessagesComponent,
+    RoomFormComponent,
   ],
   imports: [
     CommonModule,

@@ -16,11 +16,6 @@ export class AuthComponent implements OnInit {
   registrationForm: FormGroup;
 
   isLoginActive = true;
-
-  googleLogin$: Observable<unknown>;
-  facebookLogin$: Observable<unknown>;
-  credentialLogin$: Observable<unknown>;
-
   constructor(
     private userService: UserService,
     private snackBar: MatSnackBar

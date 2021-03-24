@@ -4,8 +4,7 @@ import { first } from 'rxjs/operators';
 import { UserService } from './../../../services/user.service';
 import { RoomService } from './../../../services/room.service';
 import { Visibility, Room } from './../../../interfaces/room';
-import { FormGroup, Validators, FormArray, FormBuilder } from '@angular/forms';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
@@ -13,99 +12,44 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './create-room-dialog.component.html',
   styleUrls: ['./create-room-dialog.component.scss'],
 })
-export class CreateRoomDialogComponent implements OnInit {
-  createRoomForm: FormGroup;
-
-  selectVisibility: Visibility[] = [
-    Visibility.public,
-    Visibility.protected,
-    Visibility.private,
-  ];
-  visibility: Visibility = Visibility.public;
-
-
+export class CreateRoomDialogComponent {
   constructor(
-    private fb: FormBuilder,
     private roomService: RoomService,
     private userService: UserService,
     private snackBar: MatSnackBar,
     private dialogService: DialogService
   ) {}
 
-  ngOnInit(): void {
-    this.resetForm();
-  }
-
-  // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáadja minket alapértelmezetten a formarrayhoz
-  resetForm(event?: any): void {
-    if (event) {
-      this.visibility = event.value;
-    }
-    if (this.visibility === Visibility.public) {
-      this.createRoomForm = this.fb.group({
-        name: ['', Validators.required],
-      });
-    } else if (this.visibility === Visibility.protected) {
-      this.createRoomForm = this.fb.group({
-        name: ['', Validators.required],
-        password: ['', Validators.required],
-      });
-    } else {
-      this.createRoomForm = this.fb.group({
-        name: ['', Validators.required],
-        members: this.fb.array([]),
-      });
-      this.members.push(this.fb.group({ id: [localStorage.getItem('id')] }));
-    }
-  }
-
-  get members(): FormArray {
-    return this.createRoomForm.get('members') as FormArray;
-  }
-
-  addMember(): void {
-    this.members.push(this.fb.group({ id: [''] }));
-  }
-
-  removeMember(i: number): void {
-    this.members.removeAt(i);
-  }
-
-  submit(): void {
-    if (
-      this.visibility === Visibility.private &&
-      this.createRoomForm.value.members.length < 3
-    ) {
+  checkMembersNumber(room: Room): void {
+    if (room.visibility === Visibility.private && room.members.length < 3) {
       this.snackBar.open(
         'You have to add at least 3 person to your group',
         null,
         { duration: 2000 }
       );
     } else {
-      this.createRoom(this.finalizeRoom());
+      this.createRoom(this.finalizeRoom(room));
     }
   }
 
   // ha a szobának van passwordja, akkor azt hozzáadja, ha a membersben vannak id-k akkor hozzárendeli a felhasználót hozzá
-  finalizeRoom(): Room {
-    const room: Room = {
-      name: this.createRoomForm.value.name,
-      visibility: this.visibility,
+  finalizeRoom(room: Room): Room {
+    if (
+      room.visibility === Visibility.public ||
+      room.visibility === Visibility.protected
+    ) {
+      return room;
+    }
+    return {
+      name: room.name,
+      visibility: room.visibility,
+      members: this.getUsersByIdOrEmail(room.members),
     };
-    if (this.createRoomForm.value.password) {
-      room.password = this.createRoomForm.value.password;
-    }
-    if (this.createRoomForm.value.members) {
-      room.members = this.getUsersByIdOrEmail();
-      return room;
-    } else {
-      return room;
-    }
   }
 
-  getUsersByIdOrEmail(): User[] {
+  getUsersByIdOrEmail(membersId: User[]): User[] {
     const members = [];
-    this.createRoomForm.value.members.map((member: User) => {
+    membersId.map((member: User) => {
       if (member.id === localStorage.getItem('id')) {
         members.push({
           id: localStorage.getItem('id'),
@@ -118,7 +62,7 @@ export class CreateRoomDialogComponent implements OnInit {
           .subscribe(
             (res) => {
               members.push(res);
-              if (members.length === this.createRoomForm.value.members.length) {
+              if (members.length === membersId.length) {
                 return;
               }
             },
@@ -140,7 +84,10 @@ export class CreateRoomDialogComponent implements OnInit {
         this.snackBar.open(result.message, null, {
           duration: 2000,
         });
-        this.dialogService.closeDialog(result.room);
+        this.dialogService.closeDialog(
+          result.room,
+          'CreateRoomDialogComponent'
+        );
       });
   }
 }

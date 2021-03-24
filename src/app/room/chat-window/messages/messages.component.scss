@@ -1,0 +1,31 @@
+.date-center {
+    text-align: center;
+    font-weight: bolder;
+}
+
+.name {
+    font-weight: bolder;
+    font-size: 16px;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.time {
+    color: lightgray;
+    font-size: 12px;
+}
+
+.text {
+    margin: 8px;
+    margin-left: 16px;
+}
+
+mat-card {
+    margin: 0 auto;
+    margin-top: 250px;
+    width: 180px;
+}
+
+.chat {
+    margin: 16px;
+}

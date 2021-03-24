@@ -22,6 +22,9 @@ export class AuthorizeRoomDialogComponent implements OnInit {
   }
 
   submit(): void {
-    this.dialogService.closeDialog(this.passwordForm.value.password);
+    this.dialogService.closeDialog(
+      this.passwordForm.value.password,
+      'AuthorizeRoomDialogComponent'
+    );
   }
 }
