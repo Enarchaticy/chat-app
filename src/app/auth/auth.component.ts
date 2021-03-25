@@ -4,7 +4,6 @@ import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first, catchError } from 'rxjs/operators';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-auth',
@@ -71,7 +70,7 @@ export class AuthComponent implements OnInit {
     }
   }
 
-  createUser(user: User): void {
+  private createUser(user: User): void {
     this.userService
       .register(user.email, user.password)
       .pipe(first())
@@ -91,7 +90,7 @@ export class AuthComponent implements OnInit {
     this.userService.googleAuth().pipe(first()).subscribe();
   }
 
-  loginUserWithEmailAndPassword(): void {
+  private loginUserWithEmailAndPassword(): void {
     this.userService
       .login(this.loginForm.value.email, this.loginForm.value.password)
       .pipe(

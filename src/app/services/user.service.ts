@@ -34,7 +34,6 @@ export class UserService {
         .pipe(first())
         .subscribe((res: any) => {
           if (res.id) {
-            console.log(res);
             localStorage.setItem('id', res.id);
             if (res.name && res.name !== 'null') {
               localStorage.setItem('name', res.name);

@@ -14,10 +14,11 @@ export class DialogService {
 
   private passwordSubject: Subject<string> = new Subject();
   public passwordSubject$: Observable<string> = this.passwordSubject.asObservable();
+  /* private callback = (data?) => void 0; */
 
   constructor(private overlay: Overlay) {}
-
-  public openDialog<T>(componentPortal: ComponentPortal<T>): void {
+  public openDialog<T>(componentPortal: ComponentPortal<T>/* , callback? */): void {
+    /* this.callback = callback; */
     this.overlayRef = this.overlay.create({
       hasBackdrop: true,
       positionStrategy: this.overlay
@@ -33,7 +34,8 @@ export class DialogService {
     });
   }
 
-  public closeDialog(data: string | Room, componentName: string): void {
+  public closeDialog(data: string | Room , componentName: string): void {
+   /*  this.callback(data); */
     if (componentName === 'CreateRoomDialogComponent') {
       this.roomSubject.next(data as Room);
     } else {

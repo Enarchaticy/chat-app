@@ -4,7 +4,7 @@
   </mat-card>
 </ng-container>
 <ng-template #notMyself>
-  <div class="asd">
+  <div class="message-area">
     <app-messages [roomInput]="roomInput" [newMessage]="message" (setDefault)="setDefault.emit()"
       (getDirectMessages)="getDirectMessages.emit($event)"></app-messages>
   </div>

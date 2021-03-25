@@ -33,7 +33,7 @@ export class CreateRoomDialogComponent {
   }
 
   // ha a szobának van passwordja, akkor azt hozzáadja, ha a membersben vannak id-k akkor hozzárendeli a felhasználót hozzá
-  finalizeRoom(room: Room): Room {
+  private finalizeRoom(room: Room): Room {
     if (
       room.visibility === Visibility.public ||
       room.visibility === Visibility.protected
@@ -47,7 +47,7 @@ export class CreateRoomDialogComponent {
     };
   }
 
-  getUsersByIdOrEmail(membersId: User[]): User[] {
+  private getUsersByIdOrEmail(membersId: User[]): User[] {
     const members = [];
     membersId.map((member: User) => {
       if (member.id === localStorage.getItem('id')) {
@@ -76,7 +76,7 @@ export class CreateRoomDialogComponent {
     return members;
   }
 
-  createRoom(room: Room): void {
+  private createRoom(room: Room): void {
     this.roomService
       .create(room)
       .pipe(first())

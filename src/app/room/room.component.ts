@@ -9,8 +9,7 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
-import { map, shareReplay, tap, first, take } from 'rxjs/operators';
-import { Visibility } from '../interfaces/room';
+import { map, shareReplay, tap, first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -28,8 +27,10 @@ export class RoomComponent implements OnInit {
   onlineUsers$: Observable<unknown>;
   visibleRooms$: Observable<unknown>;
 
-  roomInput: Room = { name: 'me', id: 'me', visibility: Visibility.public };
+  userForDirectMessage: User;
+  roomToOpen: Room;
   rooms: Room[];
+  asd = 'qwe';
 
   constructor(
     private breakpointObserver: BreakpointObserver,
@@ -44,68 +45,30 @@ export class RoomComponent implements OnInit {
     this.getVisibleRooms();
   }
 
-  setDefaultRoom(): void {
-    this.roomInput = { id: 'me', visibility: Visibility.public };
-  }
+  /* private callback(room: Room) {
+    if (room) {
+      this.roomToOpen = room;
+    }
+    return room;
+  } */
 
   openCreateRoomDialog(): void {
     const containerPortal = new ComponentPortal(CreateRoomDialogComponent);
-    this.dialogService.openDialog<CreateRoomDialogComponent>(containerPortal);
+    this.dialogService.openDialog<CreateRoomDialogComponent>(
+      containerPortal,
+      /* this.callback */
+    );
     this.getCreatedRoom();
   }
 
-  getOnlineUsers(): void {
+  private getOnlineUsers(): void {
     this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
   }
 
-  getVisibleRooms(): void {
+  private getVisibleRooms(): void {
     this.visibleRooms$ = this.roomService
       .getVisible(localStorage.getItem('id'))
       .pipe(tap((res: Room[]) => (this.rooms = res)));
-  }
-
-  getDirectMessages(friend: User): void {
-    this.roomService
-      .getDirectMessages(localStorage.getItem('id'), friend.id)
-      .pipe(first())
-      .subscribe(
-        (result: Room) => {
-          if (result) {
-            this.roomInput = result;
-            this.router.navigate(['/room']);
-          } else {
-            this.createRoomForDirectMessages(friend);
-          }
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
-  }
-
-  createRoomForDirectMessages(friend: User): void {
-    this.roomService
-      .create({
-        visibility: Visibility.private,
-        messages: [],
-        members: [
-          friend,
-          {
-            id: localStorage.getItem('id'),
-            name: localStorage.getItem('name'),
-          },
-        ],
-      })
-      .pipe(first())
-      .subscribe(
-        (result: any) => {
-          this.roomInput = result.room;
-          this.router.navigate(['/room']);
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
   }
 
   logout() {
@@ -128,12 +91,11 @@ export class RoomComponent implements OnInit {
       });
   }
 
-  getCreatedRoom(): void {
+  private getCreatedRoom(): void {
     this.dialogService.roomSubject$.pipe(first()).subscribe((room: any) => {
       if (room && room.id) {
         this.rooms.push(room);
-        this.roomInput = room;
-        this.router.navigate(['room']);
+        this.roomToOpen = room;
       }
     });
   }

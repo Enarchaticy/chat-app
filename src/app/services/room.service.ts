@@ -1,5 +1,6 @@
+import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
-import { Observable } from 'rxjs';
+import { from, Observable } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -8,7 +9,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
   providedIn: 'root',
 })
 export class RoomService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private firestore: AngularFirestore) {}
 
   create(room: Room): Observable<unknown> {
     return this.http.post('room', room);
@@ -50,5 +51,9 @@ export class RoomService {
   sendMessage(id: string, message: Message): Observable<unknown> {
     const params = new HttpParams().append('id', id);
     return this.http.put('room', message, { params });
+  }
+
+  createRoom(room: Room): Observable<unknown> {
+    return from(this.firestore.collection('room').add(room));
   }
 }

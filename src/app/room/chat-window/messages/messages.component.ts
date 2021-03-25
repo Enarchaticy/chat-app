@@ -14,6 +14,7 @@ import {
   OnChanges,
   Output,
   EventEmitter,
+  SimpleChanges,
 } from '@angular/core';
 
 @Component({
@@ -29,7 +30,7 @@ export class MessagesComponent implements OnChanges {
 
   room$: Observable<Room>;
   room: Room;
-  messages: any;
+  messages;
 
   constructor(
     private dialogService: DialogService,
@@ -37,9 +38,9 @@ export class MessagesComponent implements OnChanges {
     private roomService: RoomService
   ) {}
 
-  ngOnChanges(changes: any): void {
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes.roomInput) {
-      this.getRoomById();
+      this.handleRoomInput();
     } else {
       this.messagePrettier(this.room);
     }
@@ -51,7 +52,7 @@ export class MessagesComponent implements OnChanges {
     }
   }
 
-  getRoom(...args: string[]): void {
+  private setRoomObservable(...args: string[]): void {
     this.room$ = this.roomService
       .getRoom(this.roomInput.visibility, ...args)
       .pipe(
@@ -69,31 +70,31 @@ export class MessagesComponent implements OnChanges {
       );
   }
 
-  getRoomById(): void {
+  private handleRoomInput(): void {
     if (this.roomInput.visibility === Visibility.private) {
-      this.getRoom(this.roomInput.id, localStorage.getItem('id'));
+      this.setRoomObservable(this.roomInput.id, localStorage.getItem('id'));
     } else if (this.roomInput.visibility === Visibility.protected) {
       this.openAuthorizeRoomDialog();
       this.handleClosedDialog();
     } else {
-      this.getRoom(this.roomInput.id);
+      this.setRoomObservable(this.roomInput.id);
     }
   }
 
-  openAuthorizeRoomDialog(): void {
+  private openAuthorizeRoomDialog(): void {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     this.dialogService.openDialog<AuthorizeRoomDialogComponent>(
       containerPortal
     );
   }
 
-  handleClosedDialog(): void {
+  private handleClosedDialog(): void {
     this.dialogService.passwordSubject$.pipe(first()).subscribe((password) => {
-      this.getRoom(this.roomInput.id, password);
+      this.setRoomObservable(this.roomInput.id, password);
     });
   }
 
-  messagePrettier(room: Room): void {
+  private messagePrettier(room: Room): void {
     this.messages = this.groupBy(
       room.messages.map((message) => {
         return {
@@ -110,7 +111,7 @@ export class MessagesComponent implements OnChanges {
     );
   }
 
-  groupBy(list, by): any {
+  private groupBy(list, by): any {
     return list.reduce((r, a) => {
       r[a[by]] = r[a[by]] || [];
       r[a[by]].push(a);

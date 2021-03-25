@@ -36,7 +36,7 @@ export class ChatWindowComponent /* implements OnChanges  */ {
     this.chat = '';
   }
 
-  sendMessage(message: Message): void {
+  private sendMessage(message: Message): void {
     this.roomService
       .sendMessage(this.roomInput.id, message)
       .pipe(first())
