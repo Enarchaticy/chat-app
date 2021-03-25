@@ -11,9 +11,9 @@
 /node_modules
 
 # enviromental variables
-src/environments/*
+#src/environments/*
 
-#/src/environments/
+/src/environments/
 
 # /src/environments/environment.ts
 
