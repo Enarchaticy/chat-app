@@ -70,6 +70,14 @@ export class AuthComponent implements OnInit {
     }
   }
 
+  loginWithFacebook() {
+    this.userService.facebookAuth().pipe(first()).subscribe();
+  }
+
+  loginWithGoogle() {
+    this.userService.googleAuth().pipe(first()).subscribe();
+  }
+
   private createUser(user: User): void {
     this.userService
       .register(user.email, user.password)
@@ -80,14 +88,6 @@ export class AuthComponent implements OnInit {
           .pipe(first())
           .subscribe();
       });
-  }
-
-  loginWithFacebook() {
-    this.userService.facebookAuth().pipe(first()).subscribe();
-  }
-
-  loginWithGoogle() {
-    this.userService.googleAuth().pipe(first()).subscribe();
   }
 
   private loginUserWithEmailAndPassword(): void {

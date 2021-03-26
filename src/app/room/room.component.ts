@@ -30,7 +30,7 @@ export class RoomComponent implements OnInit {
   userForDirectMessage: User;
   roomToOpen: Room;
   rooms: Room[];
-  asd = 'qwe';
+  asd: Room;
 
   constructor(
     private breakpointObserver: BreakpointObserver,
@@ -45,30 +45,23 @@ export class RoomComponent implements OnInit {
     this.getVisibleRooms();
   }
 
-  /* private callback(room: Room) {
+  callback(room: Room): Room {
+    console.log(room);
     if (room) {
       this.roomToOpen = room;
     }
+    console.log(this.asd);
     return room;
-  } */
+  }
 
   openCreateRoomDialog(): void {
     const containerPortal = new ComponentPortal(CreateRoomDialogComponent);
-    this.dialogService.openDialog<CreateRoomDialogComponent>(
+    this.asd = this.dialogService.openDialog<CreateRoomDialogComponent>(
       containerPortal,
-      /* this.callback */
+      this.callback
     );
+    console.log(this.asd);
     this.getCreatedRoom();
-  }
-
-  private getOnlineUsers(): void {
-    this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
-  }
-
-  private getVisibleRooms(): void {
-    this.visibleRooms$ = this.roomService
-      .getVisible(localStorage.getItem('id'))
-      .pipe(tap((res: Room[]) => (this.rooms = res)));
   }
 
   logout() {
@@ -89,6 +82,16 @@ export class RoomComponent implements OnInit {
         localStorage.clear();
         this.router.navigate(['/auth']);
       });
+  }
+
+  private getOnlineUsers(): void {
+    this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
+  }
+
+  private getVisibleRooms(): void {
+    this.visibleRooms$ = this.roomService
+      .getVisible(localStorage.getItem('id'))
+      .pipe(tap((res: Room[]) => (this.rooms = res)));
   }
 
   private getCreatedRoom(): void {

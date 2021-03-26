@@ -11,11 +11,9 @@
 /node_modules
 
 # enviromental variables
-#src/environments/*
 
-/src/environments/
-
-# /src/environments/environment.ts
+**/src/environments/environment.prod.ts
+**/src/environments/environment.ts
 
 # profiling files
 chrome-profiler-events*.json

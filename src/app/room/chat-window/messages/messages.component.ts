@@ -17,6 +17,10 @@ import {
   SimpleChanges,
 } from '@angular/core';
 
+interface MessageWithDay extends Message {
+  timestamp: string;
+}
+
 @Component({
   selector: 'app-messages',
   templateUrl: './messages.component.html',
@@ -96,23 +100,16 @@ export class MessagesComponent implements OnChanges {
 
   private messagePrettier(room: Room): void {
     this.messages = this.groupBy(
-      room.messages.map((message) => {
-        return {
-          ...message,
-          timestamp:
-            message.date.getFullYear() +
-            '/' +
-            (message.date.getMonth() + 1) +
-            '/' +
-            message.date.getDate(),
-        };
-      }),
+      room.messages.map((message) => ({
+        ...message,
+        timestamp: message.date.toISOString().substr(0, 10),
+      })),
       'timestamp'
     );
   }
 
-  private groupBy(list, by): any {
-    return list.reduce((r, a) => {
+  private groupBy(messages: MessageWithDay[], by: string) {
+    return messages.reduce((r, a) => {
       r[a[by]] = r[a[by]] || [];
       r[a[by]].push(a);
       return r;

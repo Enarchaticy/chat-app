@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/member-ordering */
 import { Room } from './../../interfaces/room';
 import { Injectable } from '@angular/core';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
@@ -8,17 +9,19 @@ import { Observable, Subject } from 'rxjs';
   providedIn: 'root',
 })
 export class DialogService {
+
   private overlayRef: OverlayRef;
   private roomSubject: Subject<Room> = new Subject();
   public roomSubject$: Observable<Room> = this.roomSubject.asObservable();
 
   private passwordSubject: Subject<string> = new Subject();
   public passwordSubject$: Observable<string> = this.passwordSubject.asObservable();
-  /* private callback = (data?) => void 0; */
+
+  private callback = (data?) => void 0;
 
   constructor(private overlay: Overlay) {}
-  public openDialog<T>(componentPortal: ComponentPortal<T>/* , callback? */): void {
-    /* this.callback = callback; */
+  public openDialog<T>(componentPortal: ComponentPortal<T>, callback?) {
+    this.callback = callback;
     this.overlayRef = this.overlay.create({
       hasBackdrop: true,
       positionStrategy: this.overlay
@@ -32,10 +35,11 @@ export class DialogService {
     this.overlayRef.backdropClick().subscribe(() => {
       this.closeDialog(undefined, componentPortal.component.name);
     });
+    return {name:'asd'};
   }
 
   public closeDialog(data: string | Room , componentName: string): void {
-   /*  this.callback(data); */
+    this.callback(data);
     if (componentName === 'CreateRoomDialogComponent') {
       this.roomSubject.next(data as Room);
     } else {

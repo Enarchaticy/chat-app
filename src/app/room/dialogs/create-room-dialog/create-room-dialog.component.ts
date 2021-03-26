@@ -6,6 +6,7 @@ import { RoomService } from './../../../services/room.service';
 import { Visibility, Room } from './../../../interfaces/room';
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-create-room-dialog',
