@@ -79,7 +79,6 @@ export class MessagesComponent implements OnChanges {
       this.setRoomObservable(this.roomInput.id, localStorage.getItem('id'));
     } else if (this.roomInput.visibility === Visibility.protected) {
       this.openAuthorizeRoomDialog();
-      this.handleClosedDialog();
     } else {
       this.setRoomObservable(this.roomInput.id);
     }
@@ -87,15 +86,13 @@ export class MessagesComponent implements OnChanges {
 
   private openAuthorizeRoomDialog(): void {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
-    this.dialogService.openDialog<AuthorizeRoomDialogComponent>(
-      containerPortal
-    );
-  }
-
-  private handleClosedDialog(): void {
-    this.dialogService.passwordSubject$.pipe(first()).subscribe((password) => {
-      this.setRoomObservable(this.roomInput.id, password);
-    });
+    this.dialogService
+      .openDialog<AuthorizeRoomDialogComponent>(containerPortal)
+      .subscribe({
+        complete: () => {
+          this.setRoomObservable(this.roomInput.id, this.roomService.password);
+        },
+      });
   }
 
   private messagePrettier(room: Room): void {

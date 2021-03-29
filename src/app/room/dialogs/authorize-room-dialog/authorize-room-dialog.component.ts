@@ -1,3 +1,4 @@
+import { RoomService } from './../../../services/room.service';
 import { DialogService } from './../dialog.service';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
@@ -9,7 +10,10 @@ import { FormControl, Validators, FormGroup } from '@angular/forms';
 export class AuthorizeRoomDialogComponent implements OnInit {
   passwordForm: FormGroup;
 
-  constructor(public dialogService: DialogService) {}
+  constructor(
+    public dialogService: DialogService,
+    private roomService: RoomService
+  ) {}
 
   ngOnInit(): void {
     this.resetForm();
@@ -22,9 +26,7 @@ export class AuthorizeRoomDialogComponent implements OnInit {
   }
 
   submit(): void {
-    this.dialogService.closeDialog(
-      this.passwordForm.value.password,
-      'AuthorizeRoomDialogComponent'
-    );
+    this.roomService.password = this.passwordForm.value.password;
+    this.dialogService.closeDialog();
   }
 }

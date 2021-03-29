@@ -6,7 +6,6 @@ import { RoomService } from './../../../services/room.service';
 import { Visibility, Room } from './../../../interfaces/room';
 import { Component } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Subject } from 'rxjs';
 
 @Component({
   selector: 'app-create-room-dialog',
@@ -82,13 +81,11 @@ export class CreateRoomDialogComponent {
       .create(room)
       .pipe(first())
       .subscribe((result: any) => {
+        this.roomService.newRoom = result.room;
         this.snackBar.open(result.message, null, {
           duration: 2000,
         });
-        this.dialogService.closeDialog(
-          result.room,
-          'CreateRoomDialogComponent'
-        );
+        this.dialogService.closeDialog();
       });
   }
 }

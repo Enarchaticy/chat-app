@@ -10,7 +10,7 @@ import { first } from 'rxjs/operators';
   templateUrl: './chat-window.component.html',
   styleUrls: ['./chat-window.component.scss'],
 })
-export class ChatWindowComponent /* implements OnChanges  */ {
+export class ChatWindowComponent {
   @Input() roomInput: Room;
   @Output() setDefault = new EventEmitter();
   @Output() getDirectMessages = new EventEmitter<User>();

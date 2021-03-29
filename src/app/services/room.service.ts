@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
 import { from, Observable } from 'rxjs';
@@ -9,6 +10,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
   providedIn: 'root',
 })
 export class RoomService {
+  private _newRoom: Room;
+  private _password: string;
+
   constructor(private http: HttpClient, private firestore: AngularFirestore) {}
 
   create(room: Room): Observable<unknown> {
@@ -55,5 +59,21 @@ export class RoomService {
 
   createRoom(room: Room): Observable<unknown> {
     return from(this.firestore.collection('room').add(room));
+  }
+
+  get newRoom() {
+    return this._newRoom;
+  }
+
+  set newRoom(room: Room) {
+    this._newRoom = room;
+  }
+
+  get password() {
+    return this._password;
+  }
+
+  set password(password: string) {
+    this._password = password;
   }
 }
