@@ -57,11 +57,13 @@ export class CreateRoomDialogComponent {
         });
       } else {
         this.userService
-          .getByIdOrEmail(member.id)
+          .getUserByIdOrEmail(member.id)
           .pipe(first())
           .subscribe(
-            (res) => {
-              members.push(res);
+            (res: User[]) => {
+              if(res.length > 0) {
+                members.push(res[0]);
+              }
               if (members.length === membersId.length) {
                 return;
               }
@@ -77,8 +79,9 @@ export class CreateRoomDialogComponent {
   }
 
   private createRoom(room: Room): void {
+    console.log(room);
     this.roomService
-      .create(room)
+      .createRoom(room)
       .pipe(first())
       .subscribe((result: any) => {
         this.roomService.newRoom = result.room;

@@ -27,14 +27,14 @@ interface MessageWithDay extends Message {
   styleUrls: ['./messages.component.scss'],
 })
 export class MessagesComponent implements OnChanges {
-  @Input() roomInput: Room;
-  @Input() newMessage: Message;
-  @Output() setDefault = new EventEmitter();
-  @Output() getDirectMessages = new EventEmitter<User>();
+  @Input() private roomInput: Room;
+  @Input() private newMessage: Message;
+  @Output() private setDefault = new EventEmitter();
+  @Output() private getDirectMessages = new EventEmitter<User>();
 
   room$: Observable<Room>;
-  room: Room;
   messages;
+  room: Room;
 
   constructor(
     private dialogService: DialogService,

@@ -21,6 +21,12 @@ export class UserService {
     this.afAuth.authState.subscribe((token) => {
       if (token) {
         localStorage.setItem('user', JSON.stringify(token));
+        localStorage.setItem('id', token.uid);
+
+        localStorage.setItem('name', token.displayName);
+        localStorage.setItem('email', token.email);
+        this.router.navigate(['/room']);
+
         const user: User = {
           name: token.displayName,
           email: token.email,
@@ -30,7 +36,7 @@ export class UserService {
       } else {
         localStorage.setItem('user', null);
       }
-      this.auth()
+      /* this.auth()
         .pipe(first())
         .subscribe((res: any) => {
           if (res.id) {
@@ -41,7 +47,7 @@ export class UserService {
             // localStorage.setItem('name', res.name);
             this.router.navigate(['/room']);
           }
-        });
+        }); */
     });
   }
 
@@ -101,12 +107,20 @@ export class UserService {
   }
 
   createOrUpdateUser(id: string, user: User): Observable<unknown> {
-    return from(this.firestore.collection('user').doc(id).set(user));
+    const identifier = [id, user.email];
+    return from(
+      this.firestore
+        .collection('user')
+        .doc(id)
+        .set({ ...user, identifier })
+    );
   }
 
   getUserByIdOrEmail(id: string): Observable<unknown> {
     return this.firestore
-      .collection('user', (ref) => ref.where('email', '==', 'bence@valami.hu'))
+      .collection('user', (ref) =>
+        ref.where('identifier', 'array-contains', id)
+      )
       .valueChanges();
   }
 

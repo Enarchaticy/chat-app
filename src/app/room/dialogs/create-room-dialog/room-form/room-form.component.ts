@@ -8,7 +8,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./room-form.component.scss'],
 })
 export class RoomFormComponent implements OnInit {
-  @Output() roomSubmit = new EventEmitter<Room>();
+  @Output() private roomSubmit = new EventEmitter<Room>();
   createRoomForm: FormGroup;
 
   selectVisibility: Visibility[] = [
@@ -24,7 +24,7 @@ export class RoomFormComponent implements OnInit {
     this.resetForm();
   }
 
-  // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáadja minket alapértelmezetten a formarrayhoz
+  // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáad minket alapértelmezetten a formarrayhoz
   resetForm(event?: any): void {
     if (event) {
       this.visibility = event.value;

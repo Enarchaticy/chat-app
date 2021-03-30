@@ -29,7 +29,7 @@ export class RoomComponent implements OnInit {
 
   userForDirectMessage: User;
   roomToOpen: Room;
-  rooms: Room[];
+  private rooms: Room[];
 
   constructor(
     private breakpointObserver: BreakpointObserver,
