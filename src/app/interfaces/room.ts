@@ -13,6 +13,7 @@ export interface Room {
   visibility?: Visibility;
   password?: string;
   members?: User[];
+  memberIds?: string[];
   messages?: Message[];
 }
 

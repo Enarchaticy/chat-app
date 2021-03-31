@@ -4,6 +4,7 @@ export interface User {
   email?: string;
   password?: string;
   isOnline?: boolean;
+  identifier?: string[];
 }
 
 export const users: User[] = [

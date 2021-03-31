@@ -1,4 +1,4 @@
-import { Room } from './../interfaces/room';
+import { Room, Visibility } from './../interfaces/room';
 import { DialogService } from './dialogs/dialog.service';
 import { CreateRoomDialogComponent } from './dialogs/create-room-dialog/create-room-dialog.component';
 import { ComponentPortal } from '@angular/cdk/portal';
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Observable } from 'rxjs';
-import { map, shareReplay, tap, first } from 'rxjs/operators';
+import { map, shareReplay, tap, first, mergeMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -83,9 +83,18 @@ export class RoomComponent implements OnInit {
     this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
   }
 
-  private getVisibleRooms(): void {
-    this.visibleRooms$ = this.roomService
-      .getVisible(localStorage.getItem('id'))
-      .pipe(tap((res: Room[]) => (this.rooms = res)));
+  private getVisibleRooms() {
+    this.visibleRooms$ = this.roomService.getAllRoom().pipe(
+      first(),
+      mergeMap((otherRooms: Room[]) =>
+        this.roomService.getAllPrivateRoom().pipe(
+          first(),
+          map((privateRooms: Room[]) => {
+            privateRooms.push(...otherRooms);
+            return privateRooms;
+          })
+        )
+      )
+    );
   }
 }

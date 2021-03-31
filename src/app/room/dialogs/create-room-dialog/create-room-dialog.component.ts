@@ -28,67 +28,77 @@ export class CreateRoomDialogComponent {
         { duration: 2000 }
       );
     } else {
-      this.createRoom(this.finalizeRoom(room));
+      this.finalizeRoom(room);
     }
   }
 
   // ha a szobának van passwordja, akkor azt hozzáadja, ha a membersben vannak id-k akkor hozzárendeli a felhasználót hozzá
-  private finalizeRoom(room: Room): Room {
+  private finalizeRoom(room: Room) {
     if (
       room.visibility === Visibility.public ||
       room.visibility === Visibility.protected
     ) {
-      return room;
+      this.createRoom(room);
+    } else {
+      this.getUsersByIdOrEmail(room);
     }
-    return {
-      name: room.name,
-      visibility: room.visibility,
-      members: this.getUsersByIdOrEmail(room.members),
-    };
   }
 
-  private getUsersByIdOrEmail(membersId: User[]): User[] {
+  private getUsersByIdOrEmail(room: Room): void {
     const members = [];
-    membersId.map((member: User) => {
+    room.memberIds = [];
+
+    room.members.map((member: User) => {
       if (member.id === localStorage.getItem('id')) {
         members.push({
           id: localStorage.getItem('id'),
           name: localStorage.getItem('name'),
         });
+        room.memberIds.push(member.id);
       } else {
         this.userService
           .getUserByIdOrEmail(member.id)
           .pipe(first())
           .subscribe(
             (res: User[]) => {
-              if(res.length > 0) {
+              if (res.length > 0) {
                 members.push(res[0]);
+                room.memberIds.push(res[0].identifier[0]);
               }
-              if (members.length === membersId.length) {
-                return;
+              if (members.length === room.members.length) {
+                room.members = members;
+                this.createRoom(room);
               }
             },
             (error) => {
               console.error(error);
-              return;
+              this.snackBar.open('something went wrong!', null, {
+                duration: 2000,
+              });
             }
           );
       }
     });
-    return members;
   }
 
   private createRoom(room: Room): void {
-    console.log(room);
     this.roomService
       .createRoom(room)
-      .pipe(first())
-      .subscribe((result: any) => {
-        this.roomService.newRoom = result.room;
-        this.snackBar.open(result.message, null, {
-          duration: 2000,
-        });
-        this.dialogService.closeDialog();
-      });
+      .pipe(
+        first()
+      )
+      .subscribe(
+        () => {
+          this.roomService.newRoom = room;
+          this.snackBar.open('Successful room registration!', null, {
+            duration: 2000,
+          });
+          this.dialogService.closeDialog();
+        },
+        (error) => {
+          console.error(error);
+          this.snackBar.open('Something went wrong!', null, { duration: 2000 });
+        }
+      );
   }
 }

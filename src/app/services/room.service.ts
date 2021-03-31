@@ -6,7 +6,6 @@ import { from, Observable } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { ElementSchemaRegistry } from '@angular/compiler';
 
 @Injectable({
   providedIn: 'root',
@@ -60,17 +59,7 @@ export class RoomService {
   }
 
   createRoom(room: Room): Observable<unknown> {
-    const roomToUpload: any = room;
-    if (room.members) {
-      roomToUpload.memberIds = [];
-      room.members.map((member) => {
-        console.log((member as any).identifier);
-        roomToUpload.memberIds.push(member.id || (member as any).identifier[0]);
-        return member;
-      });
-    }
-    console.log(roomToUpload);
-    return from(this.firestore.collection('room').add(roomToUpload));
+    return from(this.firestore.collection('room').add(room));
   }
 
   getRoomFromFirestore(
@@ -88,7 +77,7 @@ export class RoomService {
             query.where(
               'memberIds',
               'array-contains',
-              JSON.parse(localStorage.getItem('token')).id
+              JSON.parse(localStorage.getItem('user')).uid
             );
           } else if (visibility === Visibility.protected) {
             query.where('password', '==', password);
@@ -104,7 +93,7 @@ export class RoomService {
       this.firestore
         .collection('room', (ref) =>
           ref.where('memberIds', 'array-contains', [
-            JSON.parse(localStorage.getItem('token')).id,
+            JSON.parse(localStorage.getItem('user')).uid,
             userId,
           ])
         )
@@ -112,33 +101,50 @@ export class RoomService {
     );
   }
 
-  getAllRoom(visibility: Visibility): Observable<unknown> {
+  getAllRoom(): Observable<unknown> {
     return from(
       this.firestore
-        .collection('room', (ref) => {
+        .collection(
+          'room',
+          (ref) =>
+            ref.where(
+              'visibility',
+              '!=',
+              'private'
+            ) /* {
           const query = firebase.firestore().collection('book');
-          query.where('visibility', '==', visibility);
-          /* query.select('id', 'name', 'visibility'); */
+          query.where('visibility', '!=', 'private');
           return query;
-        })
+        } */
+        )
         .valueChanges()
     );
   }
-
-  getAllPrivateRoom(): Observable<unknown> {
-    return from(
-      this.firestore
-        .collection('room', (ref) => {
-          const query = firebase.firestore().collection('book');
+  /* { */
+  /*  const query = firebase.firestore().collection('book');
           query.where('visibility', '==', 'private');
           query.where(
             'memberIds',
             'array-contains',
-            JSON.parse(localStorage.getItem('token')).id
+            JSON.parse(localStorage.getItem('user')).uid
           );
-          /* query.select('id', 'name', 'visibility', 'members'); */
+          query.select('id', 'name', 'visibility', 'members');
           return query;
-        })
+        }) */
+
+  getAllPrivateRoom(): Observable<unknown> {
+    console.log(JSON.parse(localStorage.getItem('user')).uid);
+    return from(
+      this.firestore
+        .collection('room', (ref) =>
+          ref
+            .where('visibility', '==', 'private')
+            .where(
+              'memberIds',
+              'array-contains',
+              JSON.parse(localStorage.getItem('user')).uid
+            )
+        )
         .valueChanges()
     );
   }
