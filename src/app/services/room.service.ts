@@ -1,11 +1,12 @@
+/*eslint no-underscore-dangle: ["error", { "allowAfterThis": true }]*/
 import firebase from 'firebase/app';
-/* eslint-disable no-underscore-dangle */
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
 import { from, Observable } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -59,7 +60,11 @@ export class RoomService {
   }
 
   createRoom(room: Room): Observable<unknown> {
-    return from(this.firestore.collection('room').add(room));
+    return from(this.firestore.collection('room').add(room)).pipe(
+      tap((res: any) => {
+        this.newRoom = { id: res.id, ...room };
+      })
+    );
   }
 
   getRoomFromFirestore(

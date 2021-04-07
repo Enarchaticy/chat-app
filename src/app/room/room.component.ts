@@ -8,8 +8,8 @@ import { UserService } from './../services/user.service';
 import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { Observable } from 'rxjs';
-import { map, shareReplay, tap, first, mergeMap } from 'rxjs/operators';
+import { combineLatest, Observable } from 'rxjs';
+import { map, shareReplay, tap, first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -84,17 +84,17 @@ export class RoomComponent implements OnInit {
   }
 
   private getVisibleRooms() {
-    this.visibleRooms$ = this.roomService.getAllRoom().pipe(
-      first(),
-      mergeMap((otherRooms: Room[]) =>
-        this.roomService.getAllPrivateRoom().pipe(
-          first(),
-          map((privateRooms: Room[]) => {
-            privateRooms.push(...otherRooms);
-            return privateRooms;
-          })
-        )
-      )
+    this.visibleRooms$ = combineLatest([
+      this.roomService.getAllPrivateRoom().pipe(first()),
+      this.roomService.getAllRoom().pipe(first()),
+    ]).pipe(
+      map(
+        ([privateRooms, otherRooms]) =>
+          [...(privateRooms as Room[]), ...(otherRooms as Room[])] as Room[]
+      ),
+      tap((rooms: Room[]) => {
+        this.rooms = rooms;
+      })
     );
   }
 }

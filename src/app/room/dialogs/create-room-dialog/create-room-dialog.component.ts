@@ -84,12 +84,9 @@ export class CreateRoomDialogComponent {
   private createRoom(room: Room): void {
     this.roomService
       .createRoom(room)
-      .pipe(
-        first()
-      )
+      .pipe(first())
       .subscribe(
         () => {
-          this.roomService.newRoom = room;
           this.snackBar.open('Successful room registration!', null, {
             duration: 2000,
           });
