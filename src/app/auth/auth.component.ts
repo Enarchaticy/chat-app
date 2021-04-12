@@ -4,6 +4,7 @@ import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { first, catchError } from 'rxjs/operators';
+import firebase from 'firebase/app';
 
 @Component({
   selector: 'app-auth',
@@ -82,7 +83,7 @@ export class AuthComponent implements OnInit {
     this.userService
       .register(user.email, user.password)
       .pipe(first())
-      .subscribe((res: any) => {
+      .subscribe((res: firebase.auth.UserCredential) => {
         this.userService
           .updateName(res.user, user.name)
           .pipe(first())

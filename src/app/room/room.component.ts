@@ -24,8 +24,8 @@ export class RoomComponent implements OnInit {
       shareReplay()
     );
 
-  onlineUsers$: Observable<unknown>;
-  visibleRooms$: Observable<unknown>;
+  onlineUsers$: Observable<User[]>;
+  visibleRooms$: Observable<Room[]>;
 
   userForDirectMessage: User;
   roomToOpen: Room;
@@ -40,23 +40,14 @@ export class RoomComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.getOnlineUsers();
-    this.getVisibleRooms();
+    this.observeOnlineUsers();
+    this.observeVisibleRooms();
   }
 
   openCreateRoomDialog(): void {
     const containerPortal = new ComponentPortal(CreateRoomDialogComponent);
-    this.dialogService
-      .openDialog<CreateRoomDialogComponent>(containerPortal)
-      .subscribe({
-        complete: () => {
-          const room = this.roomService.newRoom;
-          if (room && room.id !== this.rooms[this.rooms.length - 1].id) {
-            this.rooms.push(room);
-            this.roomToOpen = room;
-          }
-        },
-      });
+    this.dialogService.openDialog<CreateRoomDialogComponent>(containerPortal);
+    this.observeNewRoom();
   }
 
   logout() {
@@ -79,19 +70,29 @@ export class RoomComponent implements OnInit {
       });
   }
 
-  private getOnlineUsers(): void {
-    this.onlineUsers$ = this.userService.getOnline(localStorage.getItem('id'));
+  private observeNewRoom() {
+    this.roomService.newRoom$.pipe(first()).subscribe((room: Room) => {
+      if (
+        room &&
+        (this.rooms.length === 0 ||
+          room.id !== this.rooms[this.rooms.length - 1].id)
+      ) {
+        this.rooms.push(room);
+        this.roomToOpen = room;
+      }
+    });
   }
 
-  private getVisibleRooms() {
+  private observeOnlineUsers(): void {
+    this.onlineUsers$ = this.userService.getOnlineUsers().pipe(first());
+  }
+
+  private observeVisibleRooms() {
     this.visibleRooms$ = combineLatest([
       this.roomService.getAllPrivateRoom().pipe(first()),
       this.roomService.getAllRoom().pipe(first()),
     ]).pipe(
-      map(
-        ([privateRooms, otherRooms]) =>
-          [...(privateRooms as Room[]), ...(otherRooms as Room[])] as Room[]
-      ),
+      map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms]),
       tap((rooms: Room[]) => {
         this.rooms = rooms;
       })

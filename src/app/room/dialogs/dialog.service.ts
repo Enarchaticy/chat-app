@@ -10,9 +10,7 @@ export class DialogService {
   private overlayRef: OverlayRef;
 
   constructor(private overlay: Overlay) {}
-  public openDialog<T>(
-    componentPortal: ComponentPortal<T>
-  ): Observable<unknown> {
+  public openDialog<T>(componentPortal: ComponentPortal<T>) {
     this.overlayRef = this.overlay.create({
       hasBackdrop: true,
       positionStrategy: this.overlay
@@ -26,7 +24,6 @@ export class DialogService {
     this.overlayRef.backdropClick().subscribe(() => {
       this.closeDialog();
     });
-    return this.overlayRef.backdropClick();
   }
 
   public closeDialog(): void {

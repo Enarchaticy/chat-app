@@ -13,7 +13,7 @@ import { first } from 'rxjs/operators';
 export class ChatWindowComponent {
   @Input() roomInput: Room;
   @Output() setDefault = new EventEmitter();
-  @Output() getDirectMessages = new EventEmitter<User>();
+  @Output() observeDirectMessages = new EventEmitter<User>();
 
   chat = '';
   message: Message;
@@ -21,13 +21,14 @@ export class ChatWindowComponent {
   constructor(private roomService: RoomService) {}
 
   submitMessage(): void {
+    const token = JSON.parse(localStorage.getItem('user'));
     if (this.chat !== '') {
       const message = {
         date: new Date(),
         text: this.chat,
         author: {
-          id: localStorage.getItem('id'),
-          name: localStorage.getItem('name'),
+          id: token.uid,
+          name: token.displayName,
         },
       };
       this.sendMessage(message);
@@ -36,9 +37,10 @@ export class ChatWindowComponent {
     this.chat = '';
   }
 
+  // TODO: nem tölti fel az üzeneteket firestorerra
   private sendMessage(message: Message): void {
     this.roomService
-      .sendMessage(this.roomInput.id, message)
+      .sendMessageToFirestore(this.roomInput.id, message)
       .pipe(first())
       .subscribe();
   }

@@ -18,7 +18,7 @@ export class RoomBodyComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.userForDirectMessage && this.userForDirectMessage) {
-      this.getDirectMessages(this.userForDirectMessage);
+      this.observeDirectMessages(this.userForDirectMessage);
     }
     if (changes.roomToOpen && this.roomToOpen) {
       this.roomInput = this.roomToOpen;
@@ -29,14 +29,14 @@ export class RoomBodyComponent implements OnChanges {
     this.roomInput = { id: 'me', visibility: Visibility.public };
   }
 
-  getDirectMessages(friend: User): void {
+  observeDirectMessages(friend: User): void {
     this.roomService
-      .getDirectMessages(localStorage.getItem('id'), friend.id)
+      .getDirectMessagesFromFirestore(friend.identifier[0])
       .pipe(first())
       .subscribe(
-        (result: Room) => {
-          if (result) {
-            this.roomInput = result;
+        (result: Room[]) => {
+          if (result.length > 0) {
+            this.roomInput = result[0];
           } else {
             this.createRoomForDirectMessages(friend);
           }
@@ -48,21 +48,24 @@ export class RoomBodyComponent implements OnChanges {
   }
 
   private createRoomForDirectMessages(friend: User): void {
+    const token = JSON.parse(localStorage.getItem('user'));
     this.roomService
-      .create({
+      .createRoom({
         visibility: Visibility.private,
-        messages: [],
+        memberIds: [friend.identifier[0], token.uid],
         members: [
           friend,
           {
-            id: localStorage.getItem('id'),
-            name: localStorage.getItem('name'),
+            id: token.uid,
+            name: token.displayName,
           },
         ],
       })
       .pipe(first())
       .subscribe(
         (result: any) => {
+          // TODO: felíratkozásnál adat átvétel helyett lekérni a szobákat megint?
+          console.log(result);
           this.roomInput = result.room;
         },
         (error) => {

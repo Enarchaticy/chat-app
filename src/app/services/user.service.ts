@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { from, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { User } from '../interfaces/user';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { AngularFireAuth } from '@angular/fire/auth';
 import firebase from 'firebase/app';
 import { AngularFirestore } from '@angular/fire/firestore';
@@ -13,7 +12,6 @@ import { AngularFirestore } from '@angular/fire/firestore';
 })
 export class UserService {
   constructor(
-    private http: HttpClient,
     public afAuth: AngularFireAuth,
     private router: Router,
     private firestore: AngularFirestore
@@ -21,10 +19,6 @@ export class UserService {
     this.afAuth.authState.subscribe((token) => {
       if (token) {
         localStorage.setItem('user', JSON.stringify(token));
-        localStorage.setItem('id', token.uid);
-
-        localStorage.setItem('name', token.displayName);
-        localStorage.setItem('email', token.email);
         this.router.navigate(['/room']);
 
         const user: User = {
@@ -36,46 +30,40 @@ export class UserService {
       } else {
         localStorage.setItem('user', null);
       }
-      /* this.auth()
-        .pipe(first())
-        .subscribe((res: any) => {
-          if (res.id) {
-            localStorage.setItem('id', res.id);
-            if (res.name && res.name !== 'null') {
-              localStorage.setItem('name', res.name);
-            }
-            // localStorage.setItem('name', res.name);
-            this.router.navigate(['/room']);
-          }
-        }); */
     });
   }
 
-  register(email: string, password: string): Observable<unknown> {
+  register(
+    email: string,
+    password: string
+  ): Observable<void | firebase.auth.UserCredential> {
     return from(this.afAuth.createUserWithEmailAndPassword(email, password));
   }
 
-  updateName(user, displayName: string): Observable<unknown> {
+  updateName(user: firebase.User, displayName: string): Observable<void> {
     return from(user.updateProfile({ displayName }));
   }
 
-  login(email: string, password: string): Observable<unknown> {
+  login(
+    email: string,
+    password: string
+  ): Observable<void | firebase.auth.UserCredential> {
     return from(this.afAuth.signInWithEmailAndPassword(email, password));
   }
 
-  facebookAuth(): Observable<unknown> {
+  facebookAuth(): Observable<void | firebase.auth.UserCredential> {
     return from(this.thirdPartyLogin(new firebase.auth.FacebookAuthProvider()));
   }
 
-  googleAuth(): Observable<unknown> {
+  googleAuth(): Observable<void | firebase.auth.UserCredential> {
     return this.thirdPartyLogin(new firebase.auth.GoogleAuthProvider());
   }
 
-  logout(): Observable<unknown> {
+  logout(): Observable<void> {
     return from(this.afAuth.signOut());
   }
 
-  thirdPartyLogin(provider): Observable<unknown> {
+  thirdPartyLogin(provider): Observable<void | firebase.auth.UserCredential> {
     return from(
       this.afAuth.signInWithPopup(provider).catch((error) => {
         console.error(error);
@@ -88,25 +76,7 @@ export class UserService {
     return user !== null;
   }
 
-  create(user: User): Observable<unknown> {
-    return this.http.post('user', user);
-  }
-
-  auth(): Observable<unknown> {
-    return this.http.post('user/auth', undefined);
-  }
-
-  getByIdOrEmail(id: string): Observable<unknown> {
-    const params = new HttpParams().append('id', id);
-    return this.http.get('user', { params });
-  }
-
-  getOnline(id: string): Observable<unknown> {
-    const params = new HttpParams().append('id', id);
-    return this.http.get('user/online', { params });
-  }
-
-  createOrUpdateUser(id: string, user: User): Observable<unknown> {
+  createOrUpdateUser(id: string, user: User): Observable<void> {
     const identifier = [id, user.email];
     return from(
       this.firestore
@@ -116,7 +86,7 @@ export class UserService {
     );
   }
 
-  getUserByIdOrEmail(id: string): Observable<unknown> {
+  getUserByIdOrEmail(id: string): Observable<User[]> {
     return this.firestore
       .collection('user', (ref) =>
         ref.where('identifier', 'array-contains', id)
@@ -124,9 +94,13 @@ export class UserService {
       .valueChanges();
   }
 
-  getOnlineUsers(): Observable<unknown> {
+  getOnlineUsers(): Observable<User[]> {
     return this.firestore
-      .collection('user', (ref) => ref.where('isOnline', '==', true))
+      .collection('user', (ref) =>
+        ref
+          .where('isOnline', '==', true)
+          .where('email', '!=', JSON.parse(localStorage.getItem('user')).email)
+      )
       .valueChanges();
   }
 }

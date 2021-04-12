@@ -1,6 +1,7 @@
 import { FormGroup, FormArray, Validators, FormBuilder } from '@angular/forms';
 import { Visibility, Room } from './../../../../interfaces/room';
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+import { MatSelectChange } from '@angular/material/select';
 
 @Component({
   selector: 'app-room-form',
@@ -25,7 +26,7 @@ export class RoomFormComponent implements OnInit {
   }
 
   // figyelembe veszi a láthatóságot és aszerint rakja össze a formot, private esetén hozzáad minket alapértelmezetten a formarrayhoz
-  resetForm(event?: any): void {
+  resetForm(event?: MatSelectChange): void {
     if (event) {
       this.visibility = event.value;
     }
@@ -43,7 +44,9 @@ export class RoomFormComponent implements OnInit {
         name: ['', Validators.required],
         members: this.fb.array([]),
       });
-      this.members.push(this.fb.group({ id: [localStorage.getItem('id')] }));
+      this.members.push(
+        this.fb.group({ id: [JSON.parse(localStorage.getItem('user')).uid] })
+      );
     }
   }
 

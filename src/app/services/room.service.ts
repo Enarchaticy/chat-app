@@ -2,98 +2,90 @@
 import firebase from 'firebase/app';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
-import { from, Observable } from 'rxjs';
+import { from, Observable, Subject } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { tap } from 'rxjs/operators';
+import { first, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RoomService {
-  private _newRoom: Room;
-  private _password: string;
+  public newRoom$: Observable<Room>;
+  public password$: Observable<string>;
+  private newRoomSubject: Subject<Room> = new Subject();
+  private passwordSubject: Subject<string> = new Subject();
 
-  constructor(private http: HttpClient, private firestore: AngularFirestore) {}
-
-  create(room: Room): Observable<unknown> {
-    return this.http.post('room', room);
+  constructor(private firestore: AngularFirestore) {
+    this.newRoom$ = this.newRoomSubject.asObservable();
+    this.password$ = this.passwordSubject.asObservable();
   }
 
-  getDirectMessages(myId: string, friendId: string): Observable<unknown> {
-    const params = new HttpParams()
-      .append('type', 'direct')
-      .append('myId', myId)
-      .append('friendId', friendId);
-    return this.http.get('room', { params });
-  }
-
-  getRoom(type: string, ...args: string[]): Observable<unknown> {
-    let params;
-    if (type === Visibility.public) {
-      params = new HttpParams().append('type', type).append('id', args[0]);
-    } else if (type === Visibility.protected) {
-      params = new HttpParams()
-        .append('type', type)
-        .append('id', args[0])
-        .append('password', args[1]);
-    } else if (type === Visibility.private) {
-      params = new HttpParams()
-        .append('type', type)
-        .append('id', args[0])
-        .append('userId', args[1]);
-    }
-    return this.http.get('room', { params });
-  }
-
-  getVisible(userId: string): Observable<unknown> {
-    const params = new HttpParams()
-      .append('type', 'visible')
-      .append('userId', userId);
-    return this.http.get('room', { params });
-  }
-
-  sendMessage(id: string, message: Message): Observable<unknown> {
-    const params = new HttpParams().append('id', id);
-    return this.http.put('room', message, { params });
-  }
-
-  createRoom(room: Room): Observable<unknown> {
-    return from(this.firestore.collection('room').add(room)).pipe(
-      tap((res: any) => {
-        this.newRoom = { id: res.id, ...room };
-      })
-    );
+  createRoom(room: Room): Observable<Room> {
+    room = {
+      id: Math.floor(Math.random() * 10000000000) + '',
+      ...room,
+      messages: [],
+    };
+    from(this.firestore.collection('room').add(room))
+      .pipe(first())
+      .subscribe(this.newRoomSubject);
+    return this.newRoom$;
   }
 
   getRoomFromFirestore(
-    id: string,
     visibility: Visibility,
+    id: string,
     password?: string
-  ): Observable<unknown> {
+  ): Observable<Room> {
     return from(
       this.firestore
         .collection('room', (ref) => {
-          const query = firebase.firestore().collection('book');
-          query.where('id', '==', id);
-          query.where('visibility', '==', visibility);
-          if (visibility === Visibility.private) {
-            query.where(
-              'memberIds',
-              'array-contains',
-              JSON.parse(localStorage.getItem('user')).uid
-            );
+          if (visibility === Visibility.public) {
+            return ref
+              .where('id', '==', id)
+              .where('visibility', '==', visibility);
           } else if (visibility === Visibility.protected) {
-            query.where('password', '==', password);
+            return ref
+              .where('id', '==', id)
+              .where('visibility', '==', visibility)
+              .where('password', '==', password);
+          } else {
+            return ref
+              .where('id', '==', id)
+              .where('visibility', '==', visibility)
+              .where(
+                'memberIds',
+                'array-contains',
+                JSON.parse(localStorage.getItem('user')).uid
+              );
           }
-          return query;
         })
         .valueChanges()
-    );
+    ).pipe(map((res) => res[0]));
+  }
+  // TODO: ez valószínű nem jó
+  sendMessageToFirestore(id: string, message: Message): Observable<void> {
+    let obs;
+    this.firestore
+      .collection('users', (ref) => ref.where('id', '==', id))
+      .get()
+      .pipe(first())
+      .subscribe((res: firebase.firestore.QuerySnapshot<Room[]>) => {
+        obs = from(
+          this.firestore
+            .collection('users')
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            .doc(res['id'])
+            .update({
+              messages: firebase.firestore.FieldValue.arrayUnion(message),
+            })
+        );
+      });
+    return obs;
   }
 
-  getDirectMessagesFromFirestore(userId: string): Observable<unknown> {
+  getDirectMessagesFromFirestore(userId: string): Observable<Room[]> {
     return from(
       this.firestore
         .collection('room', (ref) =>
@@ -106,26 +98,13 @@ export class RoomService {
     );
   }
 
-  getAllRoom(): Observable<unknown> {
+  getAllRoom(): Observable<Room[]> {
     return from(
       this.firestore
-        .collection(
-          'room',
-          (ref) =>
-            ref.where(
-              'visibility',
-              '!=',
-              'private'
-            ) /* {
-          const query = firebase.firestore().collection('book');
-          query.where('visibility', '!=', 'private');
-          return query;
-        } */
-        )
+        .collection('room', (ref) => ref.where('visibility', '!=', 'private'))
         .valueChanges()
     );
   }
-  /* { */
   /*  const query = firebase.firestore().collection('book');
           query.where('visibility', '==', 'private');
           query.where(
@@ -137,8 +116,7 @@ export class RoomService {
           return query;
         }) */
 
-  getAllPrivateRoom(): Observable<unknown> {
-    console.log(JSON.parse(localStorage.getItem('user')).uid);
+  getAllPrivateRoom(): Observable<Room[]> {
     return from(
       this.firestore
         .collection('room', (ref) =>
@@ -154,19 +132,11 @@ export class RoomService {
     );
   }
 
-  get newRoom() {
-    return this._newRoom;
-  }
-
   set newRoom(room: Room) {
-    this._newRoom = room;
-  }
-
-  get password() {
-    return this._password;
+    this.newRoomSubject.next(room);
   }
 
   set password(password: string) {
-    this._password = password;
+    this.passwordSubject.next(password);
   }
 }

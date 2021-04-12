@@ -40,19 +40,20 @@ export class CreateRoomDialogComponent {
     ) {
       this.createRoom(room);
     } else {
-      this.getUsersByIdOrEmail(room);
+      this.loadUsersByIdOrEmail(room);
     }
   }
 
-  private getUsersByIdOrEmail(room: Room): void {
+  private loadUsersByIdOrEmail(room: Room): void {
     const members = [];
     room.memberIds = [];
+    const token = JSON.parse(localStorage.getItem('user'));
 
     room.members.map((member: User) => {
-      if (member.id === localStorage.getItem('id')) {
+      if (member.id === token.uid) {
         members.push({
-          id: localStorage.getItem('id'),
-          name: localStorage.getItem('name'),
+          id: token.uid,
+          name: token.displayName,
         });
         room.memberIds.push(member.id);
       } else {
