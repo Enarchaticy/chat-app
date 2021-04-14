@@ -9,10 +9,12 @@ export enum Visibility {
 
 export interface Room {
   id?: string;
+  queryId?: string;
   name?: string;
   visibility?: Visibility;
   password?: string;
   members?: User[];
   memberIds?: string[];
   messages?: Message[];
+  memberNumber?: number;
 }

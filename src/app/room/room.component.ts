@@ -1,4 +1,4 @@
-import { Room, Visibility } from './../interfaces/room';
+import { Room } from './../interfaces/room';
 import { DialogService } from './dialogs/dialog.service';
 import { CreateRoomDialogComponent } from './dialogs/create-room-dialog/create-room-dialog.component';
 import { ComponentPortal } from '@angular/cdk/portal';
@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { combineLatest, Observable } from 'rxjs';
-import { map, shareReplay, tap, first } from 'rxjs/operators';
+import { map, shareReplay, first, throttleTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -29,7 +29,6 @@ export class RoomComponent implements OnInit {
 
   userForDirectMessage: User;
   roomToOpen: Room;
-  private rooms: Room[];
 
   constructor(
     private breakpointObserver: BreakpointObserver,
@@ -47,7 +46,6 @@ export class RoomComponent implements OnInit {
   openCreateRoomDialog(): void {
     const containerPortal = new ComponentPortal(CreateRoomDialogComponent);
     this.dialogService.openDialog<CreateRoomDialogComponent>(containerPortal);
-    this.observeNewRoom();
   }
 
   logout() {
@@ -70,32 +68,17 @@ export class RoomComponent implements OnInit {
       });
   }
 
-  private observeNewRoom() {
-    this.roomService.newRoom$.pipe(first()).subscribe((room: Room) => {
-      if (
-        room &&
-        (this.rooms.length === 0 ||
-          room.id !== this.rooms[this.rooms.length - 1].id)
-      ) {
-        this.rooms.push(room);
-        this.roomToOpen = room;
-      }
-    });
-  }
-
   private observeOnlineUsers(): void {
     this.onlineUsers$ = this.userService.getOnlineUsers().pipe(first());
   }
 
   private observeVisibleRooms() {
     this.visibleRooms$ = combineLatest([
-      this.roomService.getAllPrivateRoom().pipe(first()),
-      this.roomService.getAllRoom().pipe(first()),
+      this.roomService.getAllPrivateRoom(),
+      this.roomService.getAllRoom(),
     ]).pipe(
       map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms]),
-      tap((rooms: Room[]) => {
-        this.rooms = rooms;
-      })
+      throttleTime(250)
     );
   }
 }

@@ -52,7 +52,12 @@ export class RoomBodyComponent implements OnChanges {
     this.roomService
       .createRoom({
         visibility: Visibility.private,
-        memberIds: [friend.identifier[0], token.uid],
+        memberIds: [
+          friend.identifier[0] + token.uid,
+          token.uid + friend.identifier[0],
+          friend.identifier[0],
+          token.uid,
+        ],
         members: [
           friend,
           {
@@ -60,13 +65,12 @@ export class RoomBodyComponent implements OnChanges {
             name: token.displayName,
           },
         ],
+        memberNumber: 2,
       })
       .pipe(first())
       .subscribe(
-        (result: any) => {
-          // TODO: felíratkozásnál adat átvétel helyett lekérni a szobákat megint?
-          console.log(result);
-          this.roomInput = result.room;
+        () => {
+          this.observeDirectMessages(friend);
         },
         (error) => {
           console.error(error);

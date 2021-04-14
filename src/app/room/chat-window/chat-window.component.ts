@@ -24,7 +24,7 @@ export class ChatWindowComponent {
     const token = JSON.parse(localStorage.getItem('user'));
     if (this.chat !== '') {
       const message = {
-        date: new Date(),
+        date: new Date().toISOString(),
         text: this.chat,
         author: {
           id: token.uid,
