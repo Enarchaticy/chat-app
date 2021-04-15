@@ -20,83 +20,48 @@ export class CreateRoomDialogComponent {
     private dialogService: DialogService
   ) {}
 
-  checkMembersNumber(room: Room): void {
-    if (room.visibility === Visibility.private && room.members.length < 3) {
-      this.snackBar.open(
-        'You have to add at least 3 person to your group',
-        null,
-        { duration: 2000 }
-      );
+  finalizeRoom(room: Room) {
+    if (room.visibility === Visibility.private) {
+      if (room.members.length >= 3) {
+        this.loadUsersByIdOrEmail(room);
+      } else {
+        this.snackBar.open(
+          'You have to add at least 3 person to your group',
+          null,
+          { duration: 2000 }
+        );
+      }
     } else {
-      this.finalizeRoom(room);
-    }
-  }
-
-  // ha a szobának van passwordja, akkor azt hozzáadja, ha a membersben vannak id-k akkor hozzárendeli a felhasználót hozzá
-  private finalizeRoom(room: Room) {
-    if (
-      room.visibility === Visibility.public ||
-      room.visibility === Visibility.protected
-    ) {
       this.createRoom(room);
-    } else {
-      this.loadUsersByIdOrEmail(room);
     }
   }
 
   private loadUsersByIdOrEmail(room: Room): void {
-    const members = [];
-    room.memberIds = [];
-    const token = JSON.parse(localStorage.getItem('user'));
-
-    room.members.map((member: User) => {
-      if (member.id === token.uid) {
-        members.push({
-          id: token.uid,
-          name: token.displayName,
-        });
-        room.memberIds.push(member.id);
-      } else {
-        this.userService
-          .getUserByIdOrEmail(member.id)
-          .pipe(first())
-          .subscribe(
-            (res: User[]) => {
-              if (res.length > 0) {
-                members.push(res[0]);
-                room.memberIds.push(res[0].identifier[0]);
-              }
-              if (members.length === room.members.length) {
-                room.members = members;
-                this.createRoom(room);
-              }
-            },
-            (error) => {
-              console.error(error);
-              this.snackBar.open('something went wrong!', null, {
-                duration: 2000,
-              });
-            }
-          );
-      }
-    });
+    this.userService
+      .getByIdOrEmail(room.members.map((member: User) => member.id))
+      .pipe(first())
+      .subscribe((users: User[]) => {
+        if (users.length === room.members.length) {
+          room.members = users;
+          room.memberIds = users.map((user) => user.identifier[0]);
+          this.createRoom(room);
+        } else {
+          this.snackBar.open('wrong ids and emails!', null, {
+            duration: 2000,
+          });
+        }
+      });
   }
 
   private createRoom(room: Room): void {
     this.roomService
-      .createRoom(room)
+      .create(room)
       .pipe(first())
-      .subscribe(
-        () => {
-          this.snackBar.open('Successful room registration!', null, {
-            duration: 2000,
-          });
-          this.dialogService.closeDialog();
-        },
-        (error) => {
-          console.error(error);
-          this.snackBar.open('Something went wrong!', null, { duration: 2000 });
-        }
-      );
+      .subscribe(() => {
+        this.snackBar.open('Successful room registration!', null, {
+          duration: 2000,
+        });
+        this.dialogService.closeDialog();
+      });
   }
 }

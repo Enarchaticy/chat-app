@@ -11,6 +11,11 @@ import { AngularFirestore } from '@angular/fire/firestore';
   providedIn: 'root',
 })
 export class UserService {
+  get isLoggedIn(): boolean {
+    const user = JSON.parse(localStorage.getItem('user'));
+    return user !== null;
+  }
+
   constructor(
     public afAuth: AngularFireAuth,
     private router: Router,
@@ -20,17 +25,15 @@ export class UserService {
       if (token) {
         localStorage.setItem('user', JSON.stringify(token));
         this.router.navigate(['/room']);
-
-        const user: User = {
-          name: token.displayName,
-          email: token.email,
-          isOnline: true,
-        };
-        this.createOrUpdateUser(token.uid, user).pipe(first()).subscribe();
+        this.updateIsOnline(token.uid, true).pipe(first()).subscribe();
       } else {
         localStorage.setItem('user', null);
       }
     });
+  }
+
+  updateName(user: firebase.User, displayName: string): Observable<void> {
+    return from(user.updateProfile({ displayName }));
   }
 
   register(
@@ -38,10 +41,6 @@ export class UserService {
     password: string
   ): Observable<void | firebase.auth.UserCredential> {
     return from(this.afAuth.createUserWithEmailAndPassword(email, password));
-  }
-
-  updateName(user: firebase.User, displayName: string): Observable<void> {
-    return from(user.updateProfile({ displayName }));
   }
 
   login(
@@ -59,24 +58,15 @@ export class UserService {
     return this.thirdPartyLogin(new firebase.auth.GoogleAuthProvider());
   }
 
+  thirdPartyLogin(provider): Observable<void | firebase.auth.UserCredential> {
+    return from(this.afAuth.signInWithPopup(provider));
+  }
+
   logout(): Observable<void> {
     return from(this.afAuth.signOut());
   }
 
-  thirdPartyLogin(provider): Observable<void | firebase.auth.UserCredential> {
-    return from(
-      this.afAuth.signInWithPopup(provider).catch((error) => {
-        console.error(error);
-      })
-    );
-  }
-
-  get isLoggedIn(): boolean {
-    const user = JSON.parse(localStorage.getItem('user'));
-    return user !== null;
-  }
-
-  createOrUpdateUser(id: string, user: User): Observable<void> {
+  create(id: string, user: User): Observable<void> {
     const identifier = [id, user.email];
     return from(
       this.firestore
@@ -86,15 +76,19 @@ export class UserService {
     );
   }
 
-  getUserByIdOrEmail(id: string): Observable<User[]> {
+  updateIsOnline(id: string, isOnline: boolean): Observable<void> {
+    return from(this.firestore.collection('user').doc(id).update({ isOnline }));
+  }
+
+  getByIdOrEmail(ids: string[]): Observable<User[]> {
     return this.firestore
       .collection('user', (ref) =>
-        ref.where('identifier', 'array-contains', id)
+        ref.where('identifier', 'array-contains-any', ids)
       )
       .valueChanges();
   }
 
-  getOnlineUsers(): Observable<User[]> {
+  getOnline(): Observable<User[]> {
     return this.firestore
       .collection('user', (ref) =>
         ref

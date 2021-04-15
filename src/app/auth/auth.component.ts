@@ -83,24 +83,35 @@ export class AuthComponent implements OnInit {
     this.userService
       .register(user.email, user.password)
       .pipe(first())
-      .subscribe((res: firebase.auth.UserCredential) => {
-        this.userService
-          .updateName(res.user, user.name)
-          .pipe(first())
-          .subscribe();
-      });
+      .subscribe(
+        (res: firebase.auth.UserCredential) => {
+          this.userService
+            .updateName(res.user, user.name)
+            .pipe(first())
+            .subscribe();
+          this.userService
+            .create(res.user.uid, {
+              isOnline: true,
+              name: user.name,
+              email: user.email,
+            })
+            .pipe(first())
+            .subscribe();
+        },
+        () => {
+          this.snackBar.open('Something went wrong', null, { duration: 2000 });
+        }
+      );
   }
 
   private loginUserWithEmailAndPassword(): void {
     this.userService
       .login(this.loginForm.value.email, this.loginForm.value.password)
-      .pipe(
-        first(),
-        catchError((err) => {
+      .pipe(first())
+      .subscribe({
+        error: () => {
           this.snackBar.open('Wrong credentials', null, { duration: 2000 });
-          return err;
-        })
-      )
-      .subscribe();
+        },
+      });
   }
 }

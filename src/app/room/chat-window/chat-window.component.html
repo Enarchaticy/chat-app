@@ -5,7 +5,7 @@
 </ng-container>
 <ng-template #notMyself>
   <div class="message-area">
-    <app-messages [roomInput]="roomInput" [newMessage]="message" (setDefault)="setDefault.emit()"
+    <app-messages [roomInput]="roomInput" (setDefault)="setDefault.emit()"
       (observeDirectMessages)="observeDirectMessages.emit($event)"></app-messages>
   </div>
   <div class="form-container">

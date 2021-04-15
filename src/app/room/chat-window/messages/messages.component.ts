@@ -1,7 +1,7 @@
 import { Message } from './../../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { tap, first, map, catchError } from 'rxjs/operators';
+import { tap, first } from 'rxjs/operators';
 import { Room, Visibility } from './../../../interfaces/room';
 import { Observable } from 'rxjs';
 import { RoomService } from './../../../services/room.service';
@@ -14,12 +14,7 @@ import {
   OnChanges,
   Output,
   EventEmitter,
-  SimpleChanges,
 } from '@angular/core';
-
-interface MessageWithDay extends Message {
-  timestamp: string;
-}
 
 @Component({
   selector: 'app-messages',
@@ -28,7 +23,6 @@ interface MessageWithDay extends Message {
 })
 export class MessagesComponent implements OnChanges {
   @Input() private roomInput: Room;
-  @Input() private newMessage: Message;
   @Output() private setDefault = new EventEmitter();
   @Output() private observeDirectMessages = new EventEmitter<User>();
 
@@ -42,12 +36,8 @@ export class MessagesComponent implements OnChanges {
     private roomService: RoomService
   ) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.roomInput) {
-      this.handleRoomInput();
-    } else {
-      this.messagePrettier(this.room);
-    }
+  ngOnChanges(): void {
+    this.handleRoomInput();
   }
 
   switchToDirectMessagesWithUser(user: User): void {
@@ -58,7 +48,7 @@ export class MessagesComponent implements OnChanges {
 
   private observeRoom(roomId: string, password?: string): void {
     this.room$ = this.roomService
-      .getRoomFromFirestore(this.roomInput.visibility, roomId, password)
+      .getRoom(this.roomInput.visibility, roomId, password)
       .pipe(
         tap((room: Room) => {
           if (room !== null) {
@@ -107,7 +97,7 @@ export class MessagesComponent implements OnChanges {
     );
   }
 
-  private groupBy(messages: MessageWithDay[], by: string) {
+  private groupBy(messages: Message[], by: string) {
     return messages.reduce((r, a) => {
       r[a[by]] = r[a[by]] || [];
       r[a[by]].push(a);

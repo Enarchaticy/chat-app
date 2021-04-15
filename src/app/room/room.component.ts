@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { combineLatest, Observable } from 'rxjs';
-import { map, shareReplay, first, throttleTime } from 'rxjs/operators';
+import { map, shareReplay, first } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navigation',
@@ -49,18 +49,12 @@ export class RoomComponent implements OnInit {
   }
 
   logout() {
-    const token = JSON.parse(localStorage.getItem('user'));
     this.userService
       .logout()
       .pipe(first())
       .subscribe(() => {
-        const user: User = {
-          name: token.displayName,
-          email: token.email,
-          isOnline: false,
-        };
         this.userService
-          .createOrUpdateUser(token.uid, user)
+          .updateIsOnline(JSON.parse(localStorage.getItem('user')).uid, false)
           .pipe(first())
           .subscribe();
         localStorage.clear();
@@ -69,16 +63,15 @@ export class RoomComponent implements OnInit {
   }
 
   private observeOnlineUsers(): void {
-    this.onlineUsers$ = this.userService.getOnlineUsers().pipe(first());
+    this.onlineUsers$ = this.userService.getOnline();
   }
 
   private observeVisibleRooms() {
     this.visibleRooms$ = combineLatest([
-      this.roomService.getAllPrivateRoom(),
-      this.roomService.getAllRoom(),
+      this.roomService.getAllPrivate(),
+      this.roomService.getAll(),
     ]).pipe(
-      map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms]),
-      throttleTime(250)
+      map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms])
     );
   }
 }

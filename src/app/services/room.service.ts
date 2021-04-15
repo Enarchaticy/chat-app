@@ -1,11 +1,10 @@
-/*eslint no-underscore-dangle: ["error", { "allowAfterThis": true }]*/
 import firebase from 'firebase/app';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
 import { from, Observable, Subject } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
-import { first, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -14,11 +13,15 @@ export class RoomService {
   public password$: Observable<string>;
   private passwordSubject: Subject<string> = new Subject();
 
+  set password(password: string) {
+    this.passwordSubject.next(password);
+  }
+
   constructor(private firestore: AngularFirestore) {
     this.password$ = this.passwordSubject.asObservable();
   }
 
-  createRoom(room: Room): Observable<Room> {
+  create(room: Room): Observable<Room> {
     room = {
       queryId: Math.floor(Math.random() * 10000000000) + '',
       ...room,
@@ -30,7 +33,7 @@ export class RoomService {
     return from(this.firestore.collection('room').add(room));
   }
 
-  getRoomFromFirestore(
+  getRoom(
     visibility: Visibility,
     id: string,
     password?: string
@@ -68,8 +71,8 @@ export class RoomService {
       })
     );
   }
-  // TODO: ez valószínű nem jó itt majd a rendes firestore id-t kell használni
-  sendMessageToFirestore(id: string, message: Message): Observable<void> {
+
+  sendMessage(id: string, message: Message): Observable<void> {
     return from(
       this.firestore
         .collection('room')
@@ -80,7 +83,7 @@ export class RoomService {
     );
   }
 
-  getDirectMessagesFromFirestore(userId: string): Observable<Room[]> {
+  getDirectMessages(userId: string): Observable<Room[]> {
     return from(
       this.firestore
         .collection('room', (ref) =>
@@ -93,7 +96,7 @@ export class RoomService {
     );
   }
 
-  getAllRoom(): Observable<Room[]> {
+  getAll(): Observable<Room[]> {
     return from(
       this.firestore
         .collection('room', (ref) => ref.where('visibility', '!=', 'private'))
@@ -101,7 +104,7 @@ export class RoomService {
     );
   }
 
-  getAllPrivateRoom(): Observable<Room[]> {
+  getAllPrivate(): Observable<Room[]> {
     return from(
       this.firestore
         .collection('room', (ref) =>
@@ -116,9 +119,5 @@ export class RoomService {
         )
         .valueChanges()
     );
-  }
-
-  set password(password: string) {
-    this.passwordSubject.next(password);
   }
 }

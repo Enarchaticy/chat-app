@@ -31,26 +31,21 @@ export class RoomBodyComponent implements OnChanges {
 
   observeDirectMessages(friend: User): void {
     this.roomService
-      .getDirectMessagesFromFirestore(friend.identifier[0])
+      .getDirectMessages(friend.identifier[0])
       .pipe(first())
-      .subscribe(
-        (result: Room[]) => {
-          if (result.length > 0) {
-            this.roomInput = result[0];
-          } else {
-            this.createRoomForDirectMessages(friend);
-          }
-        },
-        (error) => {
-          console.error(error);
+      .subscribe((result: Room[]) => {
+        if (result.length > 0) {
+          this.roomInput = result[0];
+        } else {
+          this.createRoomForDirectMessages(friend);
         }
-      );
+      });
   }
 
   private createRoomForDirectMessages(friend: User): void {
     const token = JSON.parse(localStorage.getItem('user'));
     this.roomService
-      .createRoom({
+      .create({
         visibility: Visibility.private,
         memberIds: [
           friend.identifier[0] + token.uid,
@@ -68,13 +63,8 @@ export class RoomBodyComponent implements OnChanges {
         memberNumber: 2,
       })
       .pipe(first())
-      .subscribe(
-        () => {
-          this.observeDirectMessages(friend);
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+      .subscribe(() => {
+        this.observeDirectMessages(friend);
+      });
   }
 }

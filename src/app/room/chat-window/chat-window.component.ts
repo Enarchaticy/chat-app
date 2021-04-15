@@ -16,8 +16,6 @@ export class ChatWindowComponent {
   @Output() observeDirectMessages = new EventEmitter<User>();
 
   chat = '';
-  message: Message;
-
   constructor(private roomService: RoomService) {}
 
   submitMessage(): void {
@@ -32,15 +30,13 @@ export class ChatWindowComponent {
         },
       };
       this.sendMessage(message);
-      this.message = message;
     }
     this.chat = '';
   }
 
-  // TODO: nem tölti fel az üzeneteket firestorerra
   private sendMessage(message: Message): void {
     this.roomService
-      .sendMessageToFirestore(this.roomInput.id, message)
+      .sendMessage(this.roomInput.id, message)
       .pipe(first())
       .subscribe();
   }

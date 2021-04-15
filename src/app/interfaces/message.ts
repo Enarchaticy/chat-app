@@ -4,4 +4,5 @@ export interface Message {
     date: string;
     text: string;
     author: User;
+    timestamp?: string;
 }
