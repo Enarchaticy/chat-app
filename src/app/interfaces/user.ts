@@ -6,3 +6,13 @@ export interface User {
   isOnline?: boolean;
   identifier?: string[];
 }
+
+export const MOCK_AUTH_USER = {
+  uid: 'asdasdasd',
+  displayName: 'asd',
+  email: 'asd@asd.asd',
+};
+
+export const setStorageUser = () => {
+  localStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER));
+};

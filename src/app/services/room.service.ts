@@ -38,38 +38,37 @@ export class RoomService {
     id: string,
     password?: string
   ): Observable<Room> {
-    return from(
-      this.firestore
-        .collection('room', (ref) => {
-          if (visibility === Visibility.public) {
-            return ref
-              .where('queryId', '==', id)
-              .where('visibility', '==', visibility);
-          } else if (visibility === Visibility.protected) {
-            return ref
-              .where('queryId', '==', id)
-              .where('visibility', '==', visibility)
-              .where('password', '==', password);
-          } else {
-            return ref
-              .where('queryId', '==', id)
-              .where('visibility', '==', visibility)
-              .where(
-                'memberIds',
-                'array-contains',
-                JSON.parse(localStorage.getItem('user')).uid
-              );
-          }
-        })
-        .valueChanges({ idField: 'id' })
-    ).pipe(
-      map((res) => {
-        if (res.length === 1) {
-          return res[0];
+    return this.firestore
+      .collection('room', (ref) => {
+        if (visibility === Visibility.public) {
+          return ref
+            .where('queryId', '==', id)
+            .where('visibility', '==', visibility);
+        } else if (visibility === Visibility.protected) {
+          return ref
+            .where('queryId', '==', id)
+            .where('visibility', '==', visibility)
+            .where('password', '==', password);
+        } else {
+          return ref
+            .where('queryId', '==', id)
+            .where('visibility', '==', visibility)
+            .where(
+              'memberIds',
+              'array-contains',
+              JSON.parse(localStorage.getItem('user')).uid
+            );
         }
-        return null;
       })
-    );
+      .valueChanges({ idField: 'id' })
+      .pipe(
+        map((res) => {
+          if (res.length === 1) {
+            return res[0];
+          }
+          return null;
+        })
+      );
   }
 
   sendMessage(id: string, message: Message): Observable<void> {
@@ -84,40 +83,34 @@ export class RoomService {
   }
 
   getDirectMessages(userId: string): Observable<Room[]> {
-    return from(
-      this.firestore
-        .collection('room', (ref) =>
-          ref.where('memberIds', 'array-contains-any', [
-            JSON.parse(localStorage.getItem('user')).uid + userId,
-            userId + JSON.parse(localStorage.getItem('user')).uid,
-          ])
-        )
-        .valueChanges()
-    );
+    return this.firestore
+      .collection('room', (ref) =>
+        ref.where('memberIds', 'array-contains-any', [
+          JSON.parse(localStorage.getItem('user')).uid + userId,
+          userId + JSON.parse(localStorage.getItem('user')).uid,
+        ])
+      )
+      .valueChanges();
   }
 
   getAll(): Observable<Room[]> {
-    return from(
-      this.firestore
-        .collection('room', (ref) => ref.where('visibility', '!=', 'private'))
-        .valueChanges()
-    );
+    return this.firestore
+      .collection('room', (ref) => ref.where('visibility', '!=', 'private'))
+      .valueChanges();
   }
 
   getAllPrivate(): Observable<Room[]> {
-    return from(
-      this.firestore
-        .collection('room', (ref) =>
-          ref
-            .where('visibility', '==', 'private')
-            .where(
-              'memberIds',
-              'array-contains',
-              JSON.parse(localStorage.getItem('user')).uid
-            )
-            .where('memberNumber', '>=', 3)
-        )
-        .valueChanges()
-    );
+    return this.firestore
+      .collection('room', (ref) =>
+        ref
+          .where('visibility', '==', 'private')
+          .where(
+            'memberIds',
+            'array-contains',
+            JSON.parse(localStorage.getItem('user')).uid
+          )
+          .where('memberNumber', '>=', 3)
+      )
+      .valueChanges();
   }
 }

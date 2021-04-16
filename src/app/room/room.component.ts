@@ -12,7 +12,7 @@ import { combineLatest, Observable } from 'rxjs';
 import { map, shareReplay, first } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-navigation',
+  selector: 'app-room',
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.scss'],
 })

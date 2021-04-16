@@ -18,3 +18,9 @@ export interface Room {
   messages?: Message[];
   memberNumber?: number;
 }
+
+export const MOCK_ROOM: Room = {
+  id: 'asdasd',
+  name: 'asdasd',
+  visibility: Visibility.public,
+};

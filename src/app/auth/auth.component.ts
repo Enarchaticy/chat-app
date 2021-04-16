@@ -3,7 +3,7 @@ import { UserService } from './../services/user.service';
 import { FormGroup, Validators, FormControl } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { first, catchError } from 'rxjs/operators';
+import { first } from 'rxjs/operators';
 import firebase from 'firebase/app';
 
 @Component({

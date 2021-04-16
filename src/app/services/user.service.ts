@@ -15,7 +15,7 @@ export class UserService {
     const user = JSON.parse(localStorage.getItem('user'));
     return user !== null;
   }
-
+  // todo megnézni hogy le kellne e íratkozni authStateről
   constructor(
     public afAuth: AngularFireAuth,
     private router: Router,
@@ -51,7 +51,7 @@ export class UserService {
   }
 
   facebookAuth(): Observable<void | firebase.auth.UserCredential> {
-    return from(this.thirdPartyLogin(new firebase.auth.FacebookAuthProvider()));
+    return this.thirdPartyLogin(new firebase.auth.FacebookAuthProvider());
   }
 
   googleAuth(): Observable<void | firebase.auth.UserCredential> {

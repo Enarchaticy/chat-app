@@ -1,5 +1,6 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ReactiveFormsModule } from '@angular/forms';
 import { RoomFormComponent } from './room-form.component';
 
 describe('RoomFormComponent', () => {
@@ -8,9 +9,10 @@ describe('RoomFormComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ RoomFormComponent ]
-    })
-    .compileComponents();
+      declarations: [RoomFormComponent],
+      imports: [ReactiveFormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
   });
 
   beforeEach(() => {
