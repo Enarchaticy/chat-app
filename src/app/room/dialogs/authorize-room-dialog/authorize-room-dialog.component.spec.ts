@@ -2,6 +2,7 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { first } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 import { AuthorizeRoomDialogComponent } from './authorize-room-dialog.component';
@@ -29,5 +30,19 @@ describe('AuthorizeRoomDialogComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should send password through passwordSubject after submit', () => {
+    component.resetForm();
+    const closeDialog = spyOn((component as any).dialogService, 'closeDialog');
+    const passwordSubject = spyOn(
+      (component as any).roomService.passwordSubject,
+      'next'
+    );
+    component.passwordForm.value.password = 'asdasd';
+    component.submit();
+
+    expect(closeDialog).toHaveBeenCalledTimes(1);
+    expect(passwordSubject).toHaveBeenCalledWith('asdasd');
   });
 });

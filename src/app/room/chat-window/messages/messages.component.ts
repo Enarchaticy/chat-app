@@ -41,7 +41,8 @@ export class MessagesComponent implements OnChanges {
   }
 
   switchToDirectMessagesWithUser(user: User): void {
-    if (user.id !== JSON.parse(localStorage.getItem('user')).displayName) {
+    if (user.id !== JSON.parse(localStorage.getItem('user')).uid) {
+      user.identifier = [user.id];
       this.observeDirectMessages.emit(user);
     }
   }

@@ -64,6 +64,7 @@ export class RoomBodyComponent implements OnChanges {
       })
       .pipe(first())
       .subscribe(() => {
+        console.log('ez megvan?');
         this.observeDirectMessages(friend);
       });
   }

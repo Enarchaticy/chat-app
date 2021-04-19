@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
-import { MOCK_ROOM } from 'src/app/interfaces/room';
+import { MOCK_PUBLIC_ROOM } from 'src/app/interfaces/room';
 import { setStorageUser } from 'src/app/interfaces/user';
 import { environment } from 'src/environments/environment';
 
@@ -24,7 +24,7 @@ describe('ChatWindowComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ChatWindowComponent);
     component = fixture.componentInstance;
-    component.roomInput = MOCK_ROOM;
+    component.roomInput = MOCK_PUBLIC_ROOM;
     setStorageUser();
     fixture.detectChanges();
   });
