@@ -1,12 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import { AuthComponent } from './auth/auth.component';
+import { RoomComponent } from './room/room.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        RouterTestingModule.withRoutes([
+          { path: 'auth', component: AuthComponent },
+          { path: 'room', component: RoomComponent },
+          { path: '**', redirectTo: '/room', pathMatch: 'full' },
+        ]),
       ],
       declarations: [
         AppComponent

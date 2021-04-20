@@ -13,6 +13,13 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment';
 import { OverlayModule } from '@angular/cdk/overlay';
 import { setStorageUser } from '../interfaces/user';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AuthComponent } from '../auth/auth.component';
 
 describe('RoomComponent', () => {
   let component: RoomComponent;
@@ -25,15 +32,26 @@ describe('RoomComponent', () => {
         imports: [
           AngularFireModule.initializeApp(environment.firebase),
           AngularFirestoreModule,
-          RouterTestingModule,
+          RouterTestingModule.withRoutes([
+            { path: 'auth', component: AuthComponent },
+            { path: 'room', component: RoomComponent },
+            { path: '**', redirectTo: '/room', pathMatch: 'full' },
+          ]),
           NoopAnimationsModule,
           LayoutModule,
-          MatButtonModule,
-          MatIconModule,
           MatListModule,
           MatSidenavModule,
           MatToolbarModule,
           OverlayModule,
+          CommonModule,
+          MatButtonModule,
+          MatIconModule,
+          MatCardModule,
+          MatFormFieldModule,
+          MatSelectModule,
+          MatInputModule,
+          FormsModule,
+          ReactiveFormsModule,
         ],
       }).compileComponents();
     })

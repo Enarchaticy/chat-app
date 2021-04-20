@@ -1,13 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  AbstractControl,
-  FormArray,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-} from '@angular/forms';
-import { MatSelect, MatSelectChange } from '@angular/material/select';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectChange } from '@angular/material/select';
 import { Visibility } from 'src/app/interfaces/room';
 import { MOCK_AUTH_USER, setStorageUser } from 'src/app/interfaces/user';
 import { RoomFormComponent } from './room-form.component';
@@ -19,7 +17,15 @@ describe('RoomFormComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [RoomFormComponent],
-      imports: [ReactiveFormsModule],
+      imports: [
+        ReactiveFormsModule,
+        CommonModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCardModule,
+        MatIconModule,
+        FormsModule,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -94,6 +100,6 @@ describe('RoomFormComponent', () => {
 
   it('should get members return form array, and its value should be ids', () => {
     component.resetForm(new MatSelectChange({} as any, Visibility.private));
-    expect(component.members.value).toEqual([{id: MOCK_AUTH_USER.uid}]);
+    expect(component.members.value).toEqual([{ id: MOCK_AUTH_USER.uid }]);
   });
 });
