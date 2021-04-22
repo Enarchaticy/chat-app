@@ -7,7 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectChange } from '@angular/material/select';
 import { Visibility } from 'src/app/interfaces/room';
-import { MOCK_AUTH_USER, setStorageUser } from 'src/app/interfaces/user';
+import { MOCK_AUTH_USER, setStorageUser } from 'src/app/test/utils';
 import { RoomFormComponent } from './room-form.component';
 
 describe('RoomFormComponent', () => {
@@ -23,9 +23,9 @@ describe('RoomFormComponent', () => {
         MatButtonModule,
         MatIconModule,
         MatCardModule,
-        MatIconModule,
         FormsModule,
       ],
+      // todo: átvinni minden komponensben
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -41,8 +41,9 @@ describe('RoomFormComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  // todo: megnézni neten, hogy van-e ilyen
   it('should resetForm by visibility', () => {
-    component.resetForm(new MatSelectChange({} as any, Visibility.public));
+    component.resetForm(new MatSelectChange(undefined, Visibility.public));
     expect(component.visibility).toBe(Visibility.public);
     expect(component.createRoomForm.value).toEqual({ name: '' });
 

@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -12,9 +13,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { setStorageUser } from '../interfaces/user';
-import { RoomComponent } from '../room/room.component';
 import { UserService } from '../services/user.service';
+import { setStorageUser } from '../test/utils';
 
 import { AuthComponent } from './auth.component';
 
@@ -33,11 +33,7 @@ describe('AuthComponent', () => {
       imports: [
         AngularFireModule.initializeApp(environment.firebase),
         AngularFirestoreModule,
-        RouterTestingModule.withRoutes([
-          { path: 'auth', component: AuthComponent },
-          { path: 'room', component: RoomComponent },
-          { path: '**', redirectTo: '/room', pathMatch: 'full' },
-        ]),
+        RouterTestingModule,
         MatSnackBarModule,
         BrowserAnimationsModule,
         CommonModule,
@@ -50,6 +46,7 @@ describe('AuthComponent', () => {
       ],
       declarations: [AuthComponent],
       providers: [{ provide: UserService, useValue: userService }],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
@@ -81,29 +78,38 @@ describe('AuthComponent', () => {
   });
 
   it('should submit check, if login or register is active', () => {
-    component.resetLoginForm();
-    component.resetRegistrationForm();
     component.isLoginActive = true;
     component.submit();
+
     expect(userService.login).toHaveBeenCalledTimes(1);
     expect(userService.register).toHaveBeenCalledTimes(0);
+  });
 
+  it('should submit check, if login or register is active', () => {
+    component.resetRegistrationForm();
     component.isLoginActive = false;
     component.submit();
-    expect(userService.login).toHaveBeenCalledTimes(1);
+
+    expect(userService.login).toHaveBeenCalledTimes(0);
     expect(userService.register).toHaveBeenCalledTimes(1);
   });
 
-  it('should submit check if password and passwordAgain is the same', () => {
+  it('should submit not call register if the passwords not the same', () => {
     component.resetRegistrationForm();
     component.isLoginActive = false;
 
-    component.registrationForm.value.password = 'testPassword';
-    component.registrationForm.value.passwordAgain = 'otherTestPassword';
+    component.registrationForm.value.password = 'firstTestPassword';
+    component.registrationForm.value.passwordAgain = 'notTheSameTestPassword';
     component.submit();
     expect(userService.register).toHaveBeenCalledTimes(0);
+  });
 
-    component.registrationForm.value.passwordAgain = 'testPassword';
+  it('should submit call register if the passwords are the same', () => {
+    component.resetRegistrationForm();
+    component.isLoginActive = false;
+
+    component.registrationForm.value.password = 'secondTestPassword';
+    component.registrationForm.value.passwordAgain = 'secondTestPassword';
     component.submit();
     expect(userService.register).toHaveBeenCalledTimes(1);
   });

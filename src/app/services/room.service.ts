@@ -1,7 +1,7 @@
 import firebase from 'firebase/app';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Message } from './../interfaces/message';
-import { from, Observable, Subject } from 'rxjs';
+import { combineLatest, from, Observable, Subject } from 'rxjs';
 import { Room, Visibility } from './../interfaces/room';
 import { Injectable } from '@angular/core';
 import { map } from 'rxjs/operators';
@@ -93,7 +93,7 @@ export class RoomService {
       .valueChanges();
   }
 
-  getAll(): Observable<Room[]> {
+  getAllOther(): Observable<Room[]> {
     return this.firestore
       .collection('room', (ref) => ref.where('visibility', '!=', 'private'))
       .valueChanges();
@@ -112,5 +112,11 @@ export class RoomService {
           .where('memberNumber', '>=', 3)
       )
       .valueChanges();
+  }
+
+  getAllVisible(): Observable<Room[]> {
+    return combineLatest([this.getAllPrivate(), this.getAllOther()]).pipe(
+      map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms])
+    );
   }
 }

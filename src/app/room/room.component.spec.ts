@@ -12,14 +12,14 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { environment } from 'src/environments/environment';
 import { OverlayModule } from '@angular/cdk/overlay';
-import { setStorageUser } from '../interfaces/user';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { AuthComponent } from '../auth/auth.component';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { setStorageUser } from '../test/utils';
 
 describe('RoomComponent', () => {
   let component: RoomComponent;
@@ -32,11 +32,7 @@ describe('RoomComponent', () => {
         imports: [
           AngularFireModule.initializeApp(environment.firebase),
           AngularFirestoreModule,
-          RouterTestingModule.withRoutes([
-            { path: 'auth', component: AuthComponent },
-            { path: 'room', component: RoomComponent },
-            { path: '**', redirectTo: '/room', pathMatch: 'full' },
-          ]),
+          RouterTestingModule,
           NoopAnimationsModule,
           LayoutModule,
           MatListModule,
@@ -53,6 +49,7 @@ describe('RoomComponent', () => {
           FormsModule,
           ReactiveFormsModule,
         ],
+        schemas: [NO_ERRORS_SCHEMA],
       }).compileComponents();
     })
   );

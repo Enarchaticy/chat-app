@@ -1,11 +1,12 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { RouterTestingModule } from '@angular/router/testing';
 import { environment } from 'src/environments/environment';
 import { AuthComponent } from '../auth/auth.component';
-import { setStorageUser } from '../interfaces/user';
 import { RoomComponent } from '../room/room.component';
+import { setStorageUser } from '../test/utils';
 
 import { AuthGuard } from './auth.guard';
 
@@ -16,13 +17,20 @@ describe('AuthGuard', () => {
     TestBed.configureTestingModule({
       imports: [
         RouterTestingModule.withRoutes([
-          { path: 'auth', component: AuthComponent },
-          { path: 'room', component: RoomComponent },
+          {
+            path: 'room',
+            component: RoomComponent,
+          },
+          {
+            path: 'auth',
+            component: AuthComponent,
+          },
           { path: '**', redirectTo: '/room', pathMatch: 'full' },
         ]),
         AngularFireModule.initializeApp(environment.firebase),
         AngularFirestoreModule,
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     });
     guard = TestBed.inject(AuthGuard);
   });

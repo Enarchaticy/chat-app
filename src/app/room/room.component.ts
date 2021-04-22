@@ -67,11 +67,6 @@ export class RoomComponent implements OnInit {
   }
 
   private observeVisibleRooms() {
-    this.visibleRooms$ = combineLatest([
-      this.roomService.getAllPrivate(),
-      this.roomService.getAll(),
-    ]).pipe(
-      map(([privateRooms, otherRooms]) => [...privateRooms, ...otherRooms])
-    );
+    this.visibleRooms$ = this.roomService.getAllVisible();
   }
 }

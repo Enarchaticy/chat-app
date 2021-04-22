@@ -1,3 +1,4 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -14,6 +15,7 @@ describe('RoomService', () => {
         AngularFireModule.initializeApp(environment.firebase),
         AngularFirestoreModule,
       ],
+      schemas: [NO_ERRORS_SCHEMA],
     });
     service = TestBed.inject(RoomService);
   });

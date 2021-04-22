@@ -1,5 +1,6 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
@@ -40,6 +41,7 @@ describe('AuthorizeRoomDialogComponent', () => {
         BrowserAnimationsModule,
       ],
       providers: [{ provide: DialogService, useValue: dialogService }],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 

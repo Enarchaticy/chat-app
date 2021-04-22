@@ -1,10 +1,10 @@
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { of } from 'rxjs';
-import { MOCK_PUBLIC_ROOM } from 'src/app/interfaces/room';
-import { setStorageUser } from 'src/app/interfaces/user';
 import { RoomService } from 'src/app/services/room.service';
+import { MOCK_PUBLIC_ROOM, setStorageUser } from 'src/app/test/utils';
 import { environment } from 'src/environments/environment';
 
 import { ChatWindowComponent } from './chat-window.component';
@@ -15,8 +15,9 @@ describe('ChatWindowComponent', () => {
   let roomService: jasmine.SpyObj<RoomService>;
 
   beforeEach(async () => {
+    // todo subject használata új értékek emittálására
     roomService = jasmine.createSpyObj<RoomService>('RoomService', {
-      sendMessage: of(),
+      sendMessage: of(null),
     });
 
     await TestBed.configureTestingModule({
@@ -26,6 +27,7 @@ describe('ChatWindowComponent', () => {
       ],
       declarations: [ChatWindowComponent],
       providers: [{ provide: RoomService, useValue: roomService }],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
@@ -41,12 +43,14 @@ describe('ChatWindowComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should check if chat is empty after submit', () => {
+  it('should not send message if chat is empty', () => {
     component.chat = '';
     component.submitMessage();
     expect(roomService.sendMessage).toHaveBeenCalledTimes(0);
+  });
 
-    component.chat = 'asd';
+  it('should send message if chat is not empty', () => {
+    component.chat = 'chat message';
     component.submitMessage();
     expect(roomService.sendMessage).toHaveBeenCalledTimes(1);
     expect(component.chat).toBe('');

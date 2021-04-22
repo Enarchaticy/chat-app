@@ -1,7 +1,7 @@
 import { first } from 'rxjs/operators';
 import { Router } from '@angular/router';
-import { from, Observable } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { from, Observable, Subscription } from 'rxjs';
+import { Injectable, OnDestroy } from '@angular/core';
 import { User } from '../interfaces/user';
 import { AngularFireAuth } from '@angular/fire/auth';
 import firebase from 'firebase/app';
@@ -10,18 +10,19 @@ import { AngularFirestore } from '@angular/fire/firestore';
 @Injectable({
   providedIn: 'root',
 })
-export class UserService {
+export class UserService implements OnDestroy {
+  private authStateSubs: Subscription;
   get isLoggedIn(): boolean {
     const user = JSON.parse(localStorage.getItem('user'));
     return user !== null;
   }
-  // todo megnézni hogy le kellne e íratkozni authStateről
+
   constructor(
     public afAuth: AngularFireAuth,
     private router: Router,
     private firestore: AngularFirestore
   ) {
-    this.afAuth.authState.subscribe((token) => {
+    this.authStateSubs = this.afAuth.authState.subscribe((token) => {
       if (token) {
         localStorage.setItem('user', JSON.stringify(token));
         this.router.navigate(['/room']);
@@ -96,5 +97,11 @@ export class UserService {
           .where('email', '!=', JSON.parse(localStorage.getItem('user')).email)
       )
       .valueChanges();
+  }
+
+  ngOnDestroy() {
+    if (this.authStateSubs) {
+      this.authStateSubs.unsubscribe();
+    }
   }
 }

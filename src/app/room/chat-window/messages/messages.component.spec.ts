@@ -1,22 +1,18 @@
 import { OverlayModule } from '@angular/cdk/overlay';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { of } from 'rxjs';
-import {
-  MOCK_PRIVATE_ROOM,
-  MOCK_PROTECTED_ROOM,
-  MOCK_PUBLIC_ROOM,
-  Room,
-} from 'src/app/interfaces/room';
 import {
   MOCK_AUTH_USER,
   MOCK_OTHER_USER,
+  MOCK_PRIVATE_ROOM,
+  MOCK_PROTECTED_ROOM,
+  MOCK_PUBLIC_ROOM,
   setStorageUser,
-} from 'src/app/interfaces/user';
-import { RoomService } from 'src/app/services/room.service';
+} from 'src/app/test/utils';
 import { environment } from 'src/environments/environment';
 import { DialogService } from '../../dialogs/dialog.service';
 
@@ -42,6 +38,7 @@ describe('MessagesComponent', () => {
       ],
       providers: [{ provide: DialogService, useValue: dialogService }],
       declarations: [MessagesComponent],
+      schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
@@ -70,21 +67,7 @@ describe('MessagesComponent', () => {
 
   // TODO: megnézni, hogy messagePrettier-t meg lehet-e így hívni
   it('should group by messages by date', () => {
-    const room: Room = {
-      messages: [
-        {
-          text: 'asd',
-          date: '2020-10-05T14:48:00.000Z',
-          author: MOCK_AUTH_USER,
-        },
-        {
-          text: 'qwe',
-          date: '2020-10-05T14:49:00.000Z',
-          author: MOCK_OTHER_USER,
-        },
-      ],
-    };
-    (component as any).messagePrettier(room);
+    (component as any).messagePrettier(MOCK_PUBLIC_ROOM);
     for (const [timestamp, messages] of Object.entries(component.messages)) {
       expect(timestamp).toBe('2020-10-05');
       expect(messages).toEqual([
@@ -93,6 +76,18 @@ describe('MessagesComponent', () => {
       ]);
     }
   });
+
+ /*  fit('should group by messages by date', () => {
+    (component as any).roomInput = MOCK_PUBLIC_ROOM;
+    const spyOnHandleRoomInput = (spyOn as any)(component, 'handleRoomInput');
+    const spyOnObserveRoom = (spyOn as any)(component, 'observeRoom');
+    const spyOnMessagePrettier = (spyOn as any)(component, 'messagePrettier');
+    (component as any).observeRoom();
+
+    expect(spyOnHandleRoomInput).toHaveBeenCalledTimes(1);
+    expect(spyOnObserveRoom).toHaveBeenCalledTimes(1);
+    expect(spyOnMessagePrettier).toHaveBeenCalledTimes(1);
+  }); */
 
   it('should ngOnChanges call openDialog only when the room is protected', () => {
     (component as any).roomInput = MOCK_PROTECTED_ROOM;
