@@ -2,6 +2,7 @@ import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import {
   MOCK_AUTH_USER,
   MOCK_OTHER_USER,
@@ -30,6 +31,7 @@ describe('RoomBodyComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(RoomBodyComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     fixture.detectChanges();
   });
 
@@ -47,7 +49,6 @@ describe('RoomBodyComponent', () => {
     component.ngOnChanges({
       roomToOpen: new SimpleChange(undefined, MOCK_PUBLIC_ROOM, true),
     });
-    console.log(component.roomInput);
     expect(component.roomInput).toEqual(MOCK_PUBLIC_ROOM);
     expect(spyOnObserveDirectMessages).toHaveBeenCalledTimes(0);
 

@@ -7,6 +7,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectChange } from '@angular/material/select';
 import { Visibility } from 'src/app/interfaces/room';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import { MOCK_AUTH_USER, setStorageUser } from 'src/app/test/utils';
 import { RoomFormComponent } from './room-form.component';
 
@@ -25,7 +26,6 @@ describe('RoomFormComponent', () => {
         MatCardModule,
         FormsModule,
       ],
-      // todo: átvinni minden komponensben
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
@@ -33,6 +33,7 @@ describe('RoomFormComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(RoomFormComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     setStorageUser();
     fixture.detectChanges();
   });
@@ -47,11 +48,11 @@ describe('RoomFormComponent', () => {
     expect(component.visibility).toBe(Visibility.public);
     expect(component.createRoomForm.value).toEqual({ name: '' });
 
-    component.resetForm(new MatSelectChange({} as any, Visibility.protected));
+    component.resetForm(new MatSelectChange(undefined, Visibility.protected));
     expect(component.visibility).toBe(Visibility.protected);
     expect(component.createRoomForm.value).toEqual({ name: '', password: '' });
 
-    component.resetForm(new MatSelectChange({} as any, Visibility.private));
+    component.resetForm(new MatSelectChange(undefined, Visibility.private));
     expect(component.visibility).toBe(Visibility.private);
     expect(component.createRoomForm.value).toEqual({
       name: '',
@@ -60,7 +61,7 @@ describe('RoomFormComponent', () => {
   });
 
   it('should add item to FormArray with addMember', () => {
-    component.resetForm(new MatSelectChange({} as any, Visibility.private));
+    component.resetForm(new MatSelectChange(undefined, Visibility.private));
     expect(component.createRoomForm.value).toEqual({
       name: '',
       members: [{ id: MOCK_AUTH_USER.uid }],
@@ -73,7 +74,7 @@ describe('RoomFormComponent', () => {
   });
 
   it('should remove member from form array', () => {
-    component.resetForm(new MatSelectChange({} as any, Visibility.private));
+    component.resetForm(new MatSelectChange(undefined, Visibility.private));
     component.addMember();
     expect(component.createRoomForm.value).toEqual({
       name: '',
@@ -90,7 +91,7 @@ describe('RoomFormComponent', () => {
 
   it('should submit trigger roomSubmit with the room value', () => {
     const roomSubmit = spyOn((component as any).roomSubmit, 'emit');
-    component.resetForm(new MatSelectChange({} as any, Visibility.public));
+    component.resetForm(new MatSelectChange(undefined, Visibility.public));
     component.submit();
     expect(roomSubmit).toHaveBeenCalledTimes(1);
     expect(roomSubmit).toHaveBeenCalledWith({
@@ -100,7 +101,7 @@ describe('RoomFormComponent', () => {
   });
 
   it('should get members return form array, and its value should be ids', () => {
-    component.resetForm(new MatSelectChange({} as any, Visibility.private));
+    component.resetForm(new MatSelectChange(undefined, Visibility.private));
     expect(component.members.value).toEqual([{ id: MOCK_AUTH_USER.uid }]);
   });
 });

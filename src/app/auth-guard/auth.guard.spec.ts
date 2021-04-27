@@ -6,6 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { environment } from 'src/environments/environment';
 import { AuthComponent } from '../auth/auth.component';
 import { RoomComponent } from '../room/room.component';
+import { useMockStorage } from '../test/mock-storage';
 import { setStorageUser } from '../test/utils';
 
 import { AuthGuard } from './auth.guard';
@@ -33,6 +34,7 @@ describe('AuthGuard', () => {
       schemas: [NO_ERRORS_SCHEMA],
     });
     guard = TestBed.inject(AuthGuard);
+    useMockStorage();
   });
 
   it('should be created', () => {
@@ -42,7 +44,7 @@ describe('AuthGuard', () => {
   it('should check if the user is logged in or not', () => {
     localStorage.setItem('user', null);
     expect(guard.canActivate()).toBe(false);
-    expect(localStorage.length).toBe(0);
+    expect(localStorage.getItem('user')).toBe(null);
     setStorageUser();
     expect(guard.canActivate()).toBe(true);
   });

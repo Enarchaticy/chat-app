@@ -10,6 +10,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import { environment } from 'src/environments/environment';
 import { DialogService } from '../dialog.service';
 
@@ -48,6 +49,7 @@ describe('AuthorizeRoomDialogComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AuthorizeRoomDialogComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     fixture.detectChanges();
   });
 

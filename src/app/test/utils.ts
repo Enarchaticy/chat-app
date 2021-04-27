@@ -1,4 +1,5 @@
 import { Room, Visibility } from '../interfaces/room';
+import { mockStorage } from './mock-storage';
 
 export const MOCK_AUTH_USER = {
   uid: 'authUserId',
@@ -13,7 +14,8 @@ export const MOCK_OTHER_USER = {
 };
 
 export const setStorageUser = () => {
-  localStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER));
+  mockStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER));
+  /* localStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER)); */
 };
 
 export const MOCK_PUBLIC_ROOM: Room = {

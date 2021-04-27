@@ -1,4 +1,4 @@
-import { OverlayModule, OverlayRef } from '@angular/cdk/overlay';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
@@ -10,6 +10,7 @@ import { of } from 'rxjs';
 import { Visibility } from 'src/app/interfaces/room';
 import { RoomService } from 'src/app/services/room.service';
 import { UserService } from 'src/app/services/user.service';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import {
   MOCK_PRIVATE_ROOM,
   MOCK_PROTECTED_ROOM,
@@ -63,6 +64,7 @@ describe('CreateRoomDialogComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(CreateRoomDialogComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     fixture.detectChanges();
   });
   // todo: elküldeni azokat a private elemekes megoldásokat amiket nem tudok másképp megvalósítani

@@ -4,6 +4,7 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { of } from 'rxjs';
 import { RoomService } from 'src/app/services/room.service';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import { MOCK_PUBLIC_ROOM, setStorageUser } from 'src/app/test/utils';
 import { environment } from 'src/environments/environment';
 
@@ -35,6 +36,7 @@ describe('ChatWindowComponent', () => {
     fixture = TestBed.createComponent(ChatWindowComponent);
     component = fixture.componentInstance;
     component.roomInput = MOCK_PUBLIC_ROOM;
+    useMockStorage();
     setStorageUser();
     fixture.detectChanges();
   });

@@ -5,6 +5,10 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { MatCardModule } from '@angular/material/card';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { of } from 'rxjs';
+import { RoomService } from 'src/app/services/room.service';
+import { UserService } from 'src/app/services/user.service';
+import { useMockStorage } from 'src/app/test/mock-storage';
 import {
   MOCK_AUTH_USER,
   MOCK_OTHER_USER,
@@ -22,10 +26,15 @@ describe('MessagesComponent', () => {
   let component: MessagesComponent;
   let fixture: ComponentFixture<MessagesComponent>;
   let dialogService: jasmine.SpyObj<DialogService>;
+  let roomService: jasmine.SpyObj<RoomService>;
 
   beforeEach(async () => {
     dialogService = jasmine.createSpyObj<DialogService>('DialogService', {
       openDialog: null,
+    });
+    roomService = jasmine.createSpyObj<RoomService>('RoomService', {
+      getRoom: of({}),
+      password$: of('string'),
     });
 
     await TestBed.configureTestingModule({
@@ -36,7 +45,10 @@ describe('MessagesComponent', () => {
         MatSnackBarModule,
         MatCardModule,
       ],
-      providers: [{ provide: DialogService, useValue: dialogService }],
+      providers: [
+        { provide: DialogService, useValue: dialogService },
+        { provide: RoomService, useValue: roomService },
+      ],
       declarations: [MessagesComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -45,6 +57,7 @@ describe('MessagesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(MessagesComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     setStorageUser();
     fixture.detectChanges();
   });
@@ -54,7 +67,7 @@ describe('MessagesComponent', () => {
   });
 
   // TODO: keresni más megoldást, amit lehet figyelni, provide
-  it('should navigate to the direct messages with the parameter user', () => {
+  /* it('should navigate to the direct messages with the parameter user', () => {
     const observeDirectMessages = spyOn(
       (component as any).observeDirectMessages,
       'emit'
@@ -77,29 +90,19 @@ describe('MessagesComponent', () => {
     }
   });
 
- /*  fit('should group by messages by date', () => {
+  it('should onChanges call getRoom when room is private or public', () => {
     (component as any).roomInput = MOCK_PUBLIC_ROOM;
-    const spyOnHandleRoomInput = (spyOn as any)(component, 'handleRoomInput');
-    const spyOnObserveRoom = (spyOn as any)(component, 'observeRoom');
-    const spyOnMessagePrettier = (spyOn as any)(component, 'messagePrettier');
-    (component as any).observeRoom();
+    component.ngOnChanges();
+    expect(roomService.getRoom).toHaveBeenCalledTimes(1);
 
-    expect(spyOnHandleRoomInput).toHaveBeenCalledTimes(1);
-    expect(spyOnObserveRoom).toHaveBeenCalledTimes(1);
-    expect(spyOnMessagePrettier).toHaveBeenCalledTimes(1);
-  }); */
+    (component as any).roomInput = MOCK_PRIVATE_ROOM;
+    component.ngOnChanges();
+    expect(roomService.getRoom).toHaveBeenCalledTimes(2);
+  });
 
   it('should ngOnChanges call openDialog only when the room is protected', () => {
     (component as any).roomInput = MOCK_PROTECTED_ROOM;
     component.ngOnChanges();
     expect(dialogService.openDialog).toHaveBeenCalledTimes(1);
-
-    (component as any).roomInput = MOCK_PRIVATE_ROOM;
-    component.ngOnChanges();
-    expect(dialogService.openDialog).toHaveBeenCalledTimes(1);
-
-    (component as any).roomInput = MOCK_PUBLIC_ROOM;
-    component.ngOnChanges();
-    expect(dialogService.openDialog).toHaveBeenCalledTimes(1);
-  });
+  }); */
 });

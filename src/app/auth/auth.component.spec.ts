@@ -14,6 +14,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { UserService } from '../services/user.service';
+import { useMockStorage } from '../test/mock-storage';
 import { setStorageUser } from '../test/utils';
 
 import { AuthComponent } from './auth.component';
@@ -27,6 +28,8 @@ describe('AuthComponent', () => {
     userService = jasmine.createSpyObj<UserService>('UserService', {
       register: of(),
       login: of(),
+      facebookAuth: of(null),
+      googleAuth: of(null),
     });
 
     await TestBed.configureTestingModule({
@@ -53,6 +56,7 @@ describe('AuthComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AuthComponent);
     component = fixture.componentInstance;
+    useMockStorage();
     setStorageUser();
     fixture.detectChanges();
   });
@@ -112,5 +116,15 @@ describe('AuthComponent', () => {
     component.registrationForm.value.passwordAgain = 'secondTestPassword';
     component.submit();
     expect(userService.register).toHaveBeenCalledTimes(1);
+  });
+
+  it('should loginWithFacebook call facebookAuth in userService', () => {
+    component.loginWithFacebook();
+    expect(userService.facebookAuth).toHaveBeenCalledTimes(1);
+  });
+
+  it('should loginWithFacebook call facebookAuth in userService', () => {
+    component.loginWithGoogle();
+    expect(userService.googleAuth).toHaveBeenCalledTimes(1);
   });
 });
