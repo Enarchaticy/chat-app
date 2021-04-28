@@ -90,7 +90,7 @@ describe('RoomFormComponent', () => {
   });
 
   it('should submit trigger roomSubmit with the room value', () => {
-    const roomSubmit = spyOn((component as any).roomSubmit, 'emit');
+    const roomSubmit = spyOn(component.roomSubmit, 'emit');
     component.resetForm(new MatSelectChange(undefined, Visibility.public));
     component.submit();
     expect(roomSubmit).toHaveBeenCalledTimes(1);

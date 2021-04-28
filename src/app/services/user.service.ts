@@ -59,7 +59,7 @@ export class UserService implements OnDestroy {
     return this.thirdPartyLogin(new firebase.auth.GoogleAuthProvider());
   }
 
-  thirdPartyLogin(provider): Observable<void | firebase.auth.UserCredential> {
+  thirdPartyLogin(provider: firebase.auth.AuthProvider): Observable<void | firebase.auth.UserCredential> {
     return from(this.afAuth.signInWithPopup(provider));
   }
 

@@ -22,9 +22,9 @@ import {
   styleUrls: ['./messages.component.scss'],
 })
 export class MessagesComponent implements OnChanges {
-  @Input() private roomInput: Room;
-  @Output() private setDefault = new EventEmitter();
-  @Output() private observeDirectMessages = new EventEmitter<User>();
+  @Input() roomInput: Room;
+  @Output() setDefault = new EventEmitter();
+  @Output() observeDirectMessages = new EventEmitter<User>();
 
   room$: Observable<Room>;
   messages;

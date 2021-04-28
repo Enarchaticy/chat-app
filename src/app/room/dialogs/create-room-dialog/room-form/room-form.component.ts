@@ -9,7 +9,7 @@ import { MatSelectChange } from '@angular/material/select';
   styleUrls: ['./room-form.component.scss'],
 })
 export class RoomFormComponent implements OnInit {
-  @Output() private roomSubmit = new EventEmitter<Room>();
+  @Output() roomSubmit = new EventEmitter<Room>();
   createRoomForm: FormGroup;
 
   selectVisibility: Visibility[] = [

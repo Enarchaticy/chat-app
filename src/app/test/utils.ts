@@ -11,12 +11,43 @@ export const MOCK_OTHER_USER = {
   uid: 'otherUserId',
   name: 'otherUser',
   email: 'other@user.com',
+  identifier: ['someId', 'other@user.com'],
 };
 
 export const setStorageUser = () => {
   mockStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER));
-  /* localStorage.setItem('user', JSON.stringify(MOCK_AUTH_USER)); */
 };
+
+export const MOCK_MESSAGES = [
+  {
+    timestamp: '2020-10-05',
+    messages: [
+      {
+        text: 'First message',
+        date: '2020-10-05T14:48:00.000Z',
+        author: MOCK_AUTH_USER,
+        timestamp: '2020-10-05',
+      },
+      {
+        text: 'Second message',
+        date: '2020-10-05T14:49:00.000Z',
+        author: MOCK_OTHER_USER,
+        timestamp: '2020-10-05',
+      },
+    ],
+  },
+  {
+    timestamp: '2020-10-07',
+    messages: [
+      {
+        text: 'Message on a different day',
+        date: '2020-10-07T14:49:00.000Z',
+        author: MOCK_AUTH_USER,
+        timestamp: '2020-10-07',
+      },
+    ],
+  },
+];
 
 export const MOCK_PUBLIC_ROOM: Room = {
   id: '101',
@@ -33,6 +64,11 @@ export const MOCK_PUBLIC_ROOM: Room = {
       text: 'Second message',
       date: '2020-10-05T14:49:00.000Z',
       author: MOCK_OTHER_USER,
+    },
+    {
+      text: 'Message on a different day',
+      date: '2020-10-07T14:49:00.000Z',
+      author: MOCK_AUTH_USER,
     },
   ],
 };
@@ -55,4 +91,5 @@ export const MOCK_PRIVATE_ROOM: Room = {
     MOCK_OTHER_USER,
     { id: 'thirdUserId', name: 'thirdUser', email: 'third@user.com' },
   ],
+  messages: [],
 };
