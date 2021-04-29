@@ -146,7 +146,6 @@ describe('MessagesComponent', () => {
     for (const [index, [timestamp, messages]] of Object.entries(
       Object.entries(component.messages)
     )) {
-      console.log(messages);
       expect(timestamp).toBe(MOCK_MESSAGES[index].timestamp);
       expect(messages).toEqual(MOCK_MESSAGES[index].messages);
     }

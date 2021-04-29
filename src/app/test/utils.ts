@@ -93,3 +93,18 @@ export const MOCK_PRIVATE_ROOM: Room = {
   ],
   messages: [],
 };
+
+export const MOCK_DIRECT_MESSAGES = {
+  visibility: Visibility.private,
+  memberIds: ['someIdauthUserId', 'authUserIdsomeId', 'someId', 'authUserId'],
+  members: [
+    {
+      uid: 'otherUserId',
+      name: 'otherUser',
+      email: 'other@user.com',
+      identifier: ['someId', 'other@user.com'],
+    },
+    { id: 'authUserId', name: 'authUser' },
+  ],
+  memberNumber: 2,
+};
