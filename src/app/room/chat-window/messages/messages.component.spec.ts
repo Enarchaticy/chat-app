@@ -71,23 +71,22 @@ describe('MessagesComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // TODO: keresni más megoldást, amit lehet figyelni, provide
   it('should navigate to the direct messages with the parameter user if it is not you', () => {
-    const observeDirectMessages = spyOn(
+    const spyOnObserveDirectMessages = spyOn(
       component.observeDirectMessages,
       'emit'
     );
     component.switchToDirectMessagesWithUser({ id: MOCK_OTHER_USER.uid });
-    expect(observeDirectMessages).toHaveBeenCalledTimes(1);
+    expect(spyOnObserveDirectMessages).toHaveBeenCalledTimes(1);
   });
 
   it('should not navigate to the direct messages with the parameter user if it is you', () => {
-    const observeDirectMessages = spyOn(
+    const spyOnObserveDirectMessages = spyOn(
       component.observeDirectMessages,
       'emit'
     );
     component.switchToDirectMessagesWithUser({ id: MOCK_AUTH_USER.uid });
-    expect(observeDirectMessages).toHaveBeenCalledTimes(0);
+    expect(spyOnObserveDirectMessages).toHaveBeenCalledTimes(0);
   });
 
   it('should onChanges call getRoom when room is private or public', () => {
@@ -108,14 +107,14 @@ describe('MessagesComponent', () => {
   });
 
   it('should not load room if protected room password and your password is not same', () => {
-    const setDefault = spyOn(component.setDefault, 'emit');
+    const spyOnSetDefault = spyOn(component.setDefault, 'emit');
     component.roomInput = MOCK_PROTECTED_ROOM;
     roomService.getRoom.and.returnValue(of(null));
 
     component.ngOnChanges();
     fixture.detectChanges();
 
-    expect(setDefault).toHaveBeenCalledOnceWith('');
+    expect(spyOnSetDefault).toHaveBeenCalledOnceWith('');
     expect(snackBar.open).toHaveBeenCalledOnceWith(
       'Szoba nem érhető el',
       null,

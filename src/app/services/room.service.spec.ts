@@ -3,7 +3,6 @@ import { TestBed } from '@angular/core/testing';
 import { AngularFireModule } from '@angular/fire';
 import {
   AngularFirestore,
-  AngularFirestoreCollection,
   AngularFirestoreModule,
 } from '@angular/fire/firestore';
 import { of } from 'rxjs';
@@ -12,6 +11,7 @@ import { Visibility } from '../interfaces/room';
 import {
   MOCK_AUTH_USER,
   MOCK_PRIVATE_ROOM,
+  MOCK_PROTECTED_ROOM,
   MOCK_PUBLIC_ROOM,
 } from '../test/utils';
 
@@ -19,19 +19,19 @@ import { RoomService } from './room.service';
 
 describe('RoomService', () => {
   let service: RoomService;
-  let firestore: jasmine.SpyObj<AngularFirestore>;
+  let fakeAFS: jasmine.SpyObj<any>;
 
   beforeEach(() => {
-    firestore = jasmine.createSpyObj<AngularFirestore>('AngularFirestore', {
-      collection: ({
-        doc: () =>
-          ({
-            update: () => of(undefined),
-          } as unknown),
-        valueChanges: () => of(undefined),
-        add: () => Promise.resolve(undefined),
-      } as unknown) as AngularFirestoreCollection<unknown>,
-    });
+    fakeAFS = jasmine.createSpyObj('AngularFirestore', ['collection']);
+    fakeAFS.collection.and.returnValue(
+      jasmine.createSpyObj('collection', ['doc', 'valueChanges', 'add'])
+    );
+    fakeAFS
+      .collection()
+      .doc.and.returnValue(jasmine.createSpyObj('doc', ['update']));
+    fakeAFS.collection().valueChanges.and.returnValue(of([]));
+    fakeAFS.collection().add.and.returnValue(Promise.resolve(null));
+    fakeAFS.collection().doc().update.and.returnValue(Promise.resolve(null));
 
     TestBed.configureTestingModule({
       imports: [
@@ -42,39 +42,59 @@ describe('RoomService', () => {
       providers: [
         {
           provide: AngularFirestore,
-          useValue: firestore,
+          useValue: fakeAFS,
         },
       ],
     });
     service = TestBed.inject(RoomService);
+    fakeAFS.collection().doc.calls.reset();
+    fakeAFS.collection.calls.reset();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should create method call firestore add', () => {
+  it('should create method add a room to firestore', () => {
     service.create(MOCK_PUBLIC_ROOM);
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        ...MOCK_PUBLIC_ROOM,
+        messages: [],
+      })
+    );
+  });
 
+  it('should create method add a private room to firestore with members', () => {
     service.create(MOCK_PRIVATE_ROOM);
-    expect(firestore.collection).toHaveBeenCalledTimes(2);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().add).toHaveBeenCalledWith(
+      jasmine.objectContaining({
+        ...MOCK_PRIVATE_ROOM,
+        messages: [],
+        memberNumber: 3,
+      })
+    );
   });
 
   it('should getRoom get room from firestore', () => {
     service.getRoom(Visibility.public, 'roomId');
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().valueChanges).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().valueChanges).toHaveBeenCalledWith({
+      idField: 'id',
+    });
   });
 
   it('should getRoom give null if the result array is empty', () => {
-    firestore.collection.and.returnValue({ valueChanges: () => of([]) } as any);
     service
       .getRoom(Visibility.public, 'roomId')
       .subscribe((res) => expect(res).toBe(null));
   });
 
   it('should getRoom give the first room in result array', () => {
-    firestore.collection.and.returnValue({
+    fakeAFS.collection.and.returnValue({
       valueChanges: () => of([MOCK_PUBLIC_ROOM]),
     } as any);
     service
@@ -88,30 +108,55 @@ describe('RoomService', () => {
       date: '2020-10-05T14:48:00.000Z',
       author: MOCK_AUTH_USER,
     });
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().doc).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().doc).toHaveBeenCalledWith('roomId');
+
+    expect(fakeAFS.collection().doc().update).toHaveBeenCalledTimes(1);
   });
 
   it('should getDirectMessages get direct messages with param user', () => {
     service.getDirectMessages('userId');
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().valueChanges).toHaveBeenCalledTimes(1);
   });
 
   it('should getAllOther get all public and protected room', () => {
     service.getAllOther();
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().valueChanges).toHaveBeenCalledTimes(1);
   });
 
   it('should getAllPrivate get all private room', () => {
     service.getAllPrivate();
-    expect(firestore.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection).toHaveBeenCalledTimes(1);
+    expect(fakeAFS.collection().valueChanges).toHaveBeenCalledTimes(1);
   });
 
   it('should getAllVisible combine getAllPrivate and getAllOther observable', () => {
-    const getAllPrivateSpyOn = spyOn(service, 'getAllPrivate');
-    const getAllOtherSpyOn = spyOn(service, 'getAllOther');
+    const spyOnGetAllPrivate = spyOn(service, 'getAllPrivate');
+    const spyOnGetAllOther = spyOn(service, 'getAllOther');
     service.getAllVisible();
 
-    expect(getAllPrivateSpyOn).toHaveBeenCalledTimes(1);
-    expect(getAllOtherSpyOn).toHaveBeenCalledTimes(1);
+    expect(spyOnGetAllPrivate).toHaveBeenCalledTimes(1);
+    expect(spyOnGetAllOther).toHaveBeenCalledTimes(1);
+  });
+
+  it('should getAllVisible value is a combination of getAllPrivate and getAllOther observable value', () => {
+    const spyOnGetAllPrivate = spyOn(service, 'getAllPrivate');
+    const spyOnGetAllOther = spyOn(service, 'getAllOther');
+    spyOnGetAllPrivate.and.returnValue(of([MOCK_PRIVATE_ROOM]));
+    spyOnGetAllOther.and.returnValue(
+      of([MOCK_PUBLIC_ROOM, MOCK_PROTECTED_ROOM])
+    );
+    service
+      .getAllVisible()
+      .subscribe((res) =>
+        expect(res).toEqual([
+          MOCK_PRIVATE_ROOM,
+          MOCK_PUBLIC_ROOM,
+          MOCK_PROTECTED_ROOM,
+        ])
+      );
   });
 });

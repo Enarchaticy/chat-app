@@ -11,21 +11,35 @@ import { DialogService } from './dialog.service';
 
 describe('DialogService', () => {
   let service: DialogService;
-  let overlay: jasmine.SpyObj<Overlay>;
+  let overlayService;
   let overlayRef: jasmine.SpyObj<OverlayRef>;
 
   beforeEach(() => {
-    /*   overlay = jasmine.createSpyObj<Overlay>('Overlay', {
-      create: undefined,
-      position: {
-        global: () =>
-          ({
-            centerHorizontally: () => {
-              ({ centerVertically: () => undefined } as any);
-            },
-          } as any),
-      } as any,
-    }); */
+    /*  overlay = jasmine.createSpyObj<Overlay>('Overlay', ['position', 'create']);
+
+    overlay.position.and.returnValue(
+      jasmine.createSpyObj('position', ['global'])
+    );
+    overlay.position().global.and.returnValue('global', ['centerHorizontally']);
+    overlay
+      .position()
+      .global()
+      .centerHorizontally.and.returnValue('centerHorizontally', [
+        'centerVertically',
+      ]);
+    overlay
+      .position()
+      .global()
+      .centerHorizontally()
+      .centerVertically.and.returnValue(undefined); */
+    /* () => {
+      global: () =>
+        ({
+          centerHorizontally: () => {
+            ({ centerVertically: () => undefined } as any);
+          },
+        } as any),
+    } as any, */
 
     TestBed.configureTestingModule({
       imports: [
@@ -41,21 +55,25 @@ describe('DialogService', () => {
       schemas: [NO_ERRORS_SCHEMA],
     });
     service = TestBed.inject(DialogService);
+
+    /* overlayService = TestBed.get(Overlay); */
+
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
-  /*
-  it('should openDialog call overlay create', () => {
+
+ /*  it('should openDialog call overlay create', () => {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     service.openDialog(containerPortal);
+    const spyOnCreate = spyOn(overlayService, 'create');
+    const spyOnPosition =spyOn(overlayService, 'position');
 
-    expect(overlay.create).toHaveBeenCalledTimes(1);
-    expect(overlay.position).toHaveBeenCalledTimes(1);
+    expect(spyOnCreate).toHaveBeenCalledTimes(1);
+    expect(spyOnPosition).toHaveBeenCalledTimes(1);
+  }); */
 
-  });
- */
   /* it('should open a dialog', () => {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     service.openDialog(containerPortal);

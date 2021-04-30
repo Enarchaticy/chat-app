@@ -12,9 +12,12 @@ import { RoomService } from 'src/app/services/room.service';
 import { UserService } from 'src/app/services/user.service';
 import { useMockStorage } from 'src/app/test/mock-storage';
 import {
+  MOCK_AUTH_USER,
+  MOCK_OTHER_USER,
   MOCK_PRIVATE_ROOM,
   MOCK_PROTECTED_ROOM,
   MOCK_PUBLIC_ROOM,
+  MOCK_THIRD_USER,
 } from 'src/app/test/utils';
 import { environment } from 'src/environments/environment';
 import { DialogService } from '../dialog.service';
@@ -67,11 +70,11 @@ describe('CreateRoomDialogComponent', () => {
     useMockStorage();
     fixture.detectChanges();
   });
-  // todo: elküldeni azokat a private elemekes megoldásokat amiket nem tudok másképp megvalósítani
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
-  // todo: szétszedni két külön tesztesetbe(ezt a többi helyen is ahol ilyen van)
+
   it('should finalizeRoom send private room to getByIdOrEmail function', () => {
     component.finalizeRoom(MOCK_PRIVATE_ROOM);
     expect(roomService.create).toHaveBeenCalledTimes(0);
@@ -105,11 +108,25 @@ describe('CreateRoomDialogComponent', () => {
     );
   });
 
-  it('should save private room if it does have three member', () => {
+  it('should loadUsersByIdOrEmail not save if private members ids does not exist', () => {
     component.finalizeRoom(MOCK_PRIVATE_ROOM);
     expect(userService.getByIdOrEmail).toHaveBeenCalledTimes(1);
     expect(snackBar.open).toHaveBeenCalledWith('wrong ids and emails!', null, {
       duration: 2000,
+    });
+  });
+
+  it('should loadUsersByIdOrEmail not save if private members ids does not exist', () => {
+    userService.getByIdOrEmail.and.returnValue(
+      of([MOCK_AUTH_USER, MOCK_OTHER_USER, MOCK_THIRD_USER])
+    );
+
+    component.finalizeRoom(MOCK_PRIVATE_ROOM);
+    expect(userService.getByIdOrEmail).toHaveBeenCalledTimes(1);
+    expect(roomService.create).toHaveBeenCalledTimes(1);
+    expect(roomService.create).toHaveBeenCalledWith({
+      ...MOCK_PRIVATE_ROOM,
+      memberIds: ['authUserId', 'otherUserId', 'thirdUserId'],
     });
   });
 });

@@ -30,6 +30,8 @@ describe('AuthComponent', () => {
       login: of(),
       facebookAuth: of(null),
       googleAuth: of(null),
+      updateName: of(undefined),
+      create: of(undefined),
     });
 
     await TestBed.configureTestingModule({
@@ -116,6 +118,36 @@ describe('AuthComponent', () => {
     component.registrationForm.value.passwordAgain = 'secondTestPassword';
     component.submit();
     expect(userService.register).toHaveBeenCalledTimes(1);
+  });
+
+  it('should register with correct data create new user and change the name', () => {
+    component.resetRegistrationForm();
+    component.isLoginActive = false;
+
+    component.registrationForm.value.email = 'new@user.com';
+    component.registrationForm.value.name = 'newUser';
+    component.registrationForm.value.password = 'secondTestPassword';
+    component.registrationForm.value.passwordAgain = 'secondTestPassword';
+    userService.register.and.returnValue(
+      of({ user: { uid: 'newUserId' } } as any)
+    );
+    component.submit();
+
+    expect(userService.register).toHaveBeenCalledWith(
+      'new@user.com',
+      'secondTestPassword'
+    );
+    expect(userService.updateName).toHaveBeenCalledTimes(1);
+    expect(userService.updateName).toHaveBeenCalledWith(
+      { uid: 'newUserId' } as any,
+      'newUser'
+    );
+    expect(userService.create).toHaveBeenCalledTimes(1);
+    expect(userService.create).toHaveBeenCalledWith('newUserId', {
+      isOnline: true,
+      name: 'newUser',
+      email: 'new@user.com',
+    });
   });
 
   it('should loginWithFacebook call facebookAuth in userService', () => {

@@ -16,7 +16,6 @@ describe('ChatWindowComponent', () => {
   let roomService: jasmine.SpyObj<RoomService>;
 
   beforeEach(async () => {
-    // todo subject használata új értékek emittálására
     roomService = jasmine.createSpyObj<RoomService>('RoomService', {
       sendMessage: of(null),
     });

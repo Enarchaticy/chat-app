@@ -5,13 +5,21 @@ export const MOCK_AUTH_USER = {
   uid: 'authUserId',
   displayName: 'authUser',
   email: 'auth@user.com',
+  identifier: ['authUserId', 'auth@user.com'],
 };
 
 export const MOCK_OTHER_USER = {
   uid: 'otherUserId',
   name: 'otherUser',
   email: 'other@user.com',
-  identifier: ['someId', 'other@user.com'],
+  identifier: ['otherUserId', 'other@user.com'],
+};
+
+export const MOCK_THIRD_USER = {
+  id: 'thirdUserId',
+  name: 'thirdUser',
+  email: 'third@user.com',
+  identifier: ['thirdUserId', 'third@user.com'],
 };
 
 export const setStorageUser = () => {
@@ -86,23 +94,19 @@ export const MOCK_PRIVATE_ROOM: Room = {
   name: 'privateRoom',
   visibility: Visibility.private,
   queryId: '103',
-  members: [
-    MOCK_AUTH_USER,
-    MOCK_OTHER_USER,
-    { id: 'thirdUserId', name: 'thirdUser', email: 'third@user.com' },
-  ],
+  members: [MOCK_AUTH_USER, MOCK_OTHER_USER, MOCK_THIRD_USER],
   messages: [],
 };
 
 export const MOCK_DIRECT_MESSAGES = {
   visibility: Visibility.private,
-  memberIds: ['someIdauthUserId', 'authUserIdsomeId', 'someId', 'authUserId'],
+  memberIds: ['otherUserIdauthUserId', 'authUserIdotherUserId', 'otherUserId', 'authUserId'],
   members: [
     {
       uid: 'otherUserId',
       name: 'otherUser',
       email: 'other@user.com',
-      identifier: ['someId', 'other@user.com'],
+      identifier: ['otherUserId', 'other@user.com'],
     },
     { id: 'authUserId', name: 'authUser' },
   ],

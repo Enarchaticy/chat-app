@@ -42,7 +42,6 @@ describe('RoomFormComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // todo: megnézni neten, hogy van-e ilyen
   it('should resetForm by visibility', () => {
     component.resetForm(new MatSelectChange(undefined, Visibility.public));
     expect(component.visibility).toBe(Visibility.public);
