@@ -11,35 +11,46 @@ import { DialogService } from './dialog.service';
 
 describe('DialogService', () => {
   let service: DialogService;
-  let overlayService;
-  let overlayRef: jasmine.SpyObj<OverlayRef>;
+  let overlay: jasmine.SpyObj<any>;
+  let overlayRef: jasmine.SpyObj<any>;
 
   beforeEach(() => {
-    /*  overlay = jasmine.createSpyObj<Overlay>('Overlay', ['position', 'create']);
+    overlay = jasmine.createSpyObj<Overlay>('Overlay', ['position', 'create']);
 
     overlay.position.and.returnValue(
       jasmine.createSpyObj('position', ['global'])
     );
-    overlay.position().global.and.returnValue('global', ['centerHorizontally']);
+    overlay
+      .position()
+      .global.and.returnValue(
+        jasmine.createSpyObj('global', ['centerHorizontally'])
+      );
     overlay
       .position()
       .global()
-      .centerHorizontally.and.returnValue('centerHorizontally', [
-        'centerVertically',
-      ]);
+      .centerHorizontally.and.returnValue(
+        jasmine.createSpyObj('centerHorizontally', ['centerVertically'])
+      );
+
+    overlay.scrollStrategies = {
+      block: () => undefined,
+    };
     overlay
       .position()
       .global()
       .centerHorizontally()
-      .centerVertically.and.returnValue(undefined); */
-    /* () => {
-      global: () =>
-        ({
-          centerHorizontally: () => {
-            ({ centerVertically: () => undefined } as any);
-          },
-        } as any),
-    } as any, */
+      .centerVertically.and.returnValue(undefined);
+
+    overlayRef = jasmine.createSpyObj<OverlayRef>('OverlayRef', [
+      'attach',
+      'backdropClick',
+      'dispose',
+    ]);
+    overlayRef.attach.and.returnValue(undefined);
+    overlayRef.backdropClick.and.returnValue(of(undefined));
+    overlayRef.dispose.and.returnValue(undefined);
+
+    overlay.create.and.returnValue(overlayRef);
 
     TestBed.configureTestingModule({
       imports: [
@@ -47,38 +58,38 @@ describe('DialogService', () => {
         AngularFireModule.initializeApp(environment.firebase),
         AngularFirestoreModule,
       ],
-      providers: [
-        /*         { provide: OverlayRef, useValue: overlayRef },
-         */
-        /* { provide: Overlay, useValue: overlay }, */
-      ],
+      providers: [{ provide: Overlay, useValue: overlay }],
       schemas: [NO_ERRORS_SCHEMA],
     });
     service = TestBed.inject(DialogService);
-
-    /* overlayService = TestBed.get(Overlay); */
-
+    overlay
+      .position()
+      .global()
+      .centerHorizontally()
+      .centerVertically.calls.reset();
+    overlay.position().global().centerHorizontally.calls.reset();
+    overlay.position().global.calls.reset();
+    overlay.position.calls.reset();
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
- /*  it('should openDialog call overlay create', () => {
+  it('should openDialog create an overlay', () => {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     service.openDialog(containerPortal);
-    const spyOnCreate = spyOn(overlayService, 'create');
-    const spyOnPosition =spyOn(overlayService, 'position');
+    expect(overlay.create).toHaveBeenCalledTimes(1);
+    expect(overlay.position).toHaveBeenCalledTimes(1);
+    expect(overlay.position().global).toHaveBeenCalledTimes(1);
+    expect(
+      overlay.position().global().centerHorizontally
+    ).toHaveBeenCalledTimes(1);
+    expect(
+      overlay.position().global().centerHorizontally().centerVertically
+    ).toHaveBeenCalledTimes(1);
 
-    expect(spyOnCreate).toHaveBeenCalledTimes(1);
-    expect(spyOnPosition).toHaveBeenCalledTimes(1);
-  }); */
-
-  /* it('should open a dialog', () => {
-    const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
-    service.openDialog(containerPortal);
-    const asd = spyOn((service as any).overlayRef, 'attach');
-    expect(asd).toHaveBeenCalledTimes(1);
+    expect(overlayRef.attach).toHaveBeenCalledTimes(1);
     expect(overlayRef.backdropClick).toHaveBeenCalledTimes(1);
-  }); */
+  });
 });

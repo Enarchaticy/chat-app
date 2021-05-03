@@ -97,7 +97,7 @@ describe('UserService', () => {
     spyOnUser.and.returnValue(Promise.resolve());
     service.updateName(user as firebase.User, 'newName');
     expect(spyOnUser).toHaveBeenCalledTimes(1);
-    expect(spyOnUser).toHaveBeenCalledWith({displayName: 'newName'});
+    expect(spyOnUser).toHaveBeenCalledWith({ displayName: 'newName' });
   });
 
   it('should register call createUserWithEmailAndPassword method', () => {
