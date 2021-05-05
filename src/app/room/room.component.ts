@@ -10,6 +10,8 @@ import { Component, OnInit } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { combineLatest, Observable } from 'rxjs';
 import { map, shareReplay, first } from 'rxjs/operators';
+import { Store } from '@ngrx/store';
+import { SetDirectMessage } from './store/direct-messages.actions';
 
 @Component({
   selector: 'app-room',
@@ -27,7 +29,6 @@ export class RoomComponent implements OnInit {
   onlineUsers$: Observable<User[]>;
   visibleRooms$: Observable<Room[]>;
 
-  userForDirectMessage: User;
   roomToOpen: Room;
 
   constructor(
@@ -35,7 +36,8 @@ export class RoomComponent implements OnInit {
     private router: Router,
     private userService: UserService,
     private roomService: RoomService,
-    private dialogService: DialogService
+    private dialogService: DialogService,
+    private store: Store<{ directMessages: User }>
   ) {}
 
   ngOnInit(): void {
@@ -60,6 +62,10 @@ export class RoomComponent implements OnInit {
         localStorage.clear();
         this.router.navigate(['/auth']);
       });
+  }
+
+  setUserForDirectMessage(user: User) {
+    this.store.dispatch(new SetDirectMessage(user));
   }
 
   private observeOnlineUsers(): void {

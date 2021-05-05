@@ -1,27 +1,55 @@
-import { first } from 'rxjs/operators';
+import { first, skip } from 'rxjs/operators';
 import { User } from './../../interfaces/user';
 import { RoomService } from './../../services/room.service';
 import { Room, Visibility } from './../../interfaces/room';
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-room-body',
   templateUrl: './room-body.component.html',
   styleUrls: ['./room-body.component.scss'],
 })
-export class RoomBodyComponent implements OnChanges {
-  @Input() userForDirectMessage: User;
+export class RoomBodyComponent implements OnChanges, OnInit, OnDestroy {
   @Input() roomToOpen: Room;
+  storeSubs: Subscription;
 
   roomInput: Room = { name: 'me', id: 'me', visibility: Visibility.public };
-  constructor(private roomService: RoomService) {}
+  constructor(
+    private roomService: RoomService,
+    private store: Store<{ directMessages: User }>
+  ) {}
+
+  ngOnInit() {
+    this.storeSubs = this.store
+      .select('directMessages')
+      .pipe(skip(1))
+      .subscribe((res: User) => {
+        console.log(res);
+        this.observeDirectMessages(res);
+      });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.userForDirectMessage && this.userForDirectMessage) {
+    /* if (changes.userForDirectMessage && this.userForDirectMessage) {
       this.observeDirectMessages(this.userForDirectMessage);
-    }
+    } */
     if (changes.roomToOpen && this.roomToOpen) {
       this.roomInput = this.roomToOpen;
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.storeSubs) {
+      this.storeSubs.unsubscribe();
     }
   }
 

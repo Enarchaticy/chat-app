@@ -1,7 +1,7 @@
 import { Message } from './../../../interfaces/message';
 import { AuthorizeRoomDialogComponent } from './../../dialogs/authorize-room-dialog/authorize-room-dialog.component';
 import { ComponentPortal } from '@angular/cdk/portal';
-import { tap, first } from 'rxjs/operators';
+import { tap, first, skip } from 'rxjs/operators';
 import { Room, Visibility } from './../../../interfaces/room';
 import { Observable } from 'rxjs';
 import { RoomService } from './../../../services/room.service';
@@ -15,6 +15,8 @@ import {
   Output,
   EventEmitter,
 } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { SetDirectMessage } from '../../store/direct-messages.actions';
 
 @Component({
   selector: 'app-messages',
@@ -33,7 +35,8 @@ export class MessagesComponent implements OnChanges {
   constructor(
     private dialogService: DialogService,
     private snackBar: MatSnackBar,
-    private roomService: RoomService
+    private roomService: RoomService,
+    private store: Store<{ password: string; directMessages: User }>
   ) {}
 
   ngOnChanges(): void {
@@ -43,7 +46,8 @@ export class MessagesComponent implements OnChanges {
   switchToDirectMessagesWithUser(user: User): void {
     if (user.id !== JSON.parse(localStorage.getItem('user')).uid) {
       user.identifier = [user.id];
-      this.observeDirectMessages.emit(user);
+      this.store.dispatch(new SetDirectMessage(user));
+      /* this.observeDirectMessages.emit(user); */
     }
   }
 
@@ -82,10 +86,18 @@ export class MessagesComponent implements OnChanges {
     this.observePassword();
   }
 
+  /* todo: ngrx-ben találni megoldást arra, hogy az elsőt kihagyja, ne itt */
   private observePassword() {
+    this.store
+      .select('password')
+      .pipe(skip(1), first())
+      .subscribe((password) => {
+        this.observeRoom(this.roomInput.queryId, password);
+      });
+    /*
     this.roomService.password$.pipe(first()).subscribe((password) => {
       this.observeRoom(this.roomInput.queryId, password);
-    });
+    }); */
   }
 
   private messagePrettier(room: Room): void {

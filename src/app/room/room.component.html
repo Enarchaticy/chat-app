@@ -4,12 +4,12 @@
     <mat-toolbar>Menu</mat-toolbar>
     <mat-nav-list>
       <h4>Rooms</h4>
-      <a *ngFor="let room of visibleRooms$ | async" mat-list-item
-        (click)="roomToOpen = room; userForDirectMessage = undefined" [routerLink]="['/room', room.id]">{{ room.name
+      <a *ngFor="let room of visibleRooms$ | async" mat-list-item (click)="roomToOpen = room"
+        [routerLink]="['/room', room.id]">{{ room.name
         }}</a>
       <h4>Direct Message</h4>
       <a *ngFor="let user of onlineUsers$ | async" mat-list-item
-        (click)="userForDirectMessage = user; roomToOpen = undefined">{{ user.name }}</a>
+        (click)="setUserForDirectMessage(user); roomToOpen = undefined">{{ user.name }}</a>
       <div class="filler"></div>
       <div class="create-room-div">
         <a class="create-room" mat-list-item (click)="openCreateRoomDialog()">
@@ -29,6 +29,6 @@
         <mat-icon>logout</mat-icon>
       </button>
     </mat-toolbar>
-    <app-room-body [userForDirectMessage]="userForDirectMessage" [roomToOpen]="roomToOpen"></app-room-body>
+    <app-room-body [roomToOpen]="roomToOpen"></app-room-body>
   </mat-sidenav-content>
 </mat-sidenav-container>
