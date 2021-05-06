@@ -5,8 +5,7 @@
 </ng-container>
 <ng-template #notMyself>
   <div class="message-area">
-    <app-messages [roomInput]="roomInput" (setDefault)="setDefault.emit()"
-      (observeDirectMessages)="observeDirectMessages.emit($event)"></app-messages>
+    <app-messages></app-messages>
   </div>
   <div class="form-container">
     <mat-form-field class="bottom-full-width">

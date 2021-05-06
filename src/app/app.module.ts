@@ -16,8 +16,9 @@ import { AngularFireModule } from '@angular/fire';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { StoreModule } from '@ngrx/store';
-import { passwordReducer } from './room/store/password.reducer';
-import { directMessagesReducer } from './room/store/direct-messages.reducer';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+
+import { appReducerMap } from './room/store/app.reducer';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,12 +34,10 @@ import { directMessagesReducer } from './room/store/direct-messages.reducer';
     MatSelectModule,
     MatSnackBarModule,
     ReactiveFormsModule,
-    StoreModule.forRoot({
-      password: passwordReducer,
-      directMessages: directMessagesReducer,
-    }),
+    StoreModule.forRoot(appReducerMap),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
+    StoreDevtoolsModule.instrument({ logOnly: environment.production }),
     AngularFireDatabaseModule,
   ],
   bootstrap: [AppComponent],

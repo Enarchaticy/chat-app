@@ -10,16 +10,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class RoomService {
-  public password$: Observable<string>;
-  private passwordSubject: Subject<string> = new Subject();
-
-  set password(password: string) {
-    this.passwordSubject.next(password);
-  }
-
-  constructor(private firestore: AngularFirestore) {
-    this.password$ = this.passwordSubject.asObservable();
-  }
+  constructor(private firestore: AngularFirestore) {}
 
   create(room: Room): Observable<Room> {
     room = {

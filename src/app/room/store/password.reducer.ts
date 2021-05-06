@@ -5,7 +5,7 @@ export const passwordReducer = (state: string, action: PasswordActions) => {
     case ADD_PASSWORD:
       return action.payload;
     default:
-      return undefined;
+      return state;
   }
 };
 

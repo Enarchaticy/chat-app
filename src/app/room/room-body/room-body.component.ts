@@ -2,59 +2,38 @@ import { first, skip } from 'rxjs/operators';
 import { User } from './../../interfaces/user';
 import { RoomService } from './../../services/room.service';
 import { Room, Visibility } from './../../interfaces/room';
-import {
-  Component,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
+import { AppState } from '../store/app.reducer';
+import { SetRoom } from '../store/room.actions';
 
 @Component({
   selector: 'app-room-body',
   templateUrl: './room-body.component.html',
   styleUrls: ['./room-body.component.scss'],
 })
-export class RoomBodyComponent implements OnChanges, OnInit, OnDestroy {
-  @Input() roomToOpen: Room;
-  storeSubs: Subscription;
+export class RoomBodyComponent implements OnInit, OnDestroy {
+  storeDirectMessageSubs: Subscription;
 
-  roomInput: Room = { name: 'me', id: 'me', visibility: Visibility.public };
   constructor(
     private roomService: RoomService,
-    private store: Store<{ directMessages: User }>
+    private store: Store<AppState>
   ) {}
 
   ngOnInit() {
-    this.storeSubs = this.store
+    this.storeDirectMessageSubs = this.store
       .select('directMessages')
       .pipe(skip(1))
       .subscribe((res: User) => {
-        console.log(res);
         this.observeDirectMessages(res);
       });
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    /* if (changes.userForDirectMessage && this.userForDirectMessage) {
-      this.observeDirectMessages(this.userForDirectMessage);
-    } */
-    if (changes.roomToOpen && this.roomToOpen) {
-      this.roomInput = this.roomToOpen;
-    }
-  }
-
   ngOnDestroy() {
-    if (this.storeSubs) {
-      this.storeSubs.unsubscribe();
+    if (this.storeDirectMessageSubs) {
+      this.storeDirectMessageSubs.unsubscribe();
     }
-  }
-
-  setDefaultRoom(): void {
-    this.roomInput = { id: 'me', visibility: Visibility.public };
   }
 
   observeDirectMessages(friend: User): void {
@@ -63,7 +42,7 @@ export class RoomBodyComponent implements OnChanges, OnInit, OnDestroy {
       .pipe(first())
       .subscribe((result: Room[]) => {
         if (result.length > 0) {
-          this.roomInput = result[0];
+          this.store.dispatch(new SetRoom(result[0]));
         } else {
           this.createRoomForDirectMessages(friend);
         }

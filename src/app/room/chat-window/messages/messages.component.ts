@@ -3,51 +3,53 @@ import { AuthorizeRoomDialogComponent } from './../../dialogs/authorize-room-dia
 import { ComponentPortal } from '@angular/cdk/portal';
 import { tap, first, skip } from 'rxjs/operators';
 import { Room, Visibility } from './../../../interfaces/room';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { RoomService } from './../../../services/room.service';
 import { User } from './../../../interfaces/user';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DialogService } from './../../dialogs/dialog.service';
-import {
-  Component,
-  Input,
-  OnChanges,
-  Output,
-  EventEmitter,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { SetDirectMessage } from '../../store/direct-messages.actions';
+import { setDirectMessage } from '../../store/direct-messages.actions';
+import { AppState } from '../../store/app.reducer';
+import { SetDefaultRoom } from '../../store/room.actions';
 
 @Component({
   selector: 'app-messages',
   templateUrl: './messages.component.html',
   styleUrls: ['./messages.component.scss'],
 })
-export class MessagesComponent implements OnChanges {
-  @Input() roomInput: Room;
-  @Output() setDefault = new EventEmitter();
-  @Output() observeDirectMessages = new EventEmitter<User>();
-
+export class MessagesComponent implements OnInit, OnDestroy {
   room$: Observable<Room>;
   messages;
   room: Room;
+  storeSubs: Subscription;
+  roomInput: Room;
 
   constructor(
     private dialogService: DialogService,
     private snackBar: MatSnackBar,
     private roomService: RoomService,
-    private store: Store<{ password: string; directMessages: User }>
+    private store: Store<AppState>
   ) {}
 
-  ngOnChanges(): void {
-    this.handleRoomInput();
+  ngOnInit() {
+    this.storeSubs = this.store.select('room').subscribe((res) => {
+      this.roomInput = res;
+      this.handleRoomInput();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.storeSubs) {
+      this.storeSubs.unsubscribe();
+    }
   }
 
   switchToDirectMessagesWithUser(user: User): void {
     if (user.id !== JSON.parse(localStorage.getItem('user')).uid) {
       user.identifier = [user.id];
-      this.store.dispatch(new SetDirectMessage(user));
-      /* this.observeDirectMessages.emit(user); */
+      this.store.dispatch(setDirectMessage(user));
     }
   }
 
@@ -57,12 +59,11 @@ export class MessagesComponent implements OnChanges {
       .pipe(
         tap((room: Room) => {
           if (room !== null) {
-            this.roomInput.id = room.id;
             this.room = room;
             this.messagePrettier(this.room);
           } else {
             this.snackBar.open('Szoba nem érhető el', null, { duration: 2000 });
-            this.setDefault.emit('');
+            this.store.dispatch(new SetDefaultRoom());
           }
         })
       );
@@ -86,7 +87,6 @@ export class MessagesComponent implements OnChanges {
     this.observePassword();
   }
 
-  /* todo: ngrx-ben találni megoldást arra, hogy az elsőt kihagyja, ne itt */
   private observePassword() {
     this.store
       .select('password')
@@ -94,10 +94,6 @@ export class MessagesComponent implements OnChanges {
       .subscribe((password) => {
         this.observeRoom(this.roomInput.queryId, password);
       });
-    /*
-    this.roomService.password$.pipe(first()).subscribe((password) => {
-      this.observeRoom(this.roomInput.queryId, password);
-    }); */
   }
 
   private messagePrettier(room: Room): void {

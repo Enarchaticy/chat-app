@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { AddPassword } from '../../store/password.actions';
+import { AppState } from '../../store/app.reducer';
 @Component({
   selector: 'app-authorize-room-dialog',
   templateUrl: './authorize-room-dialog.component.html',
@@ -15,7 +16,7 @@ export class AuthorizeRoomDialogComponent implements OnInit {
   constructor(
     public dialogService: DialogService,
     private roomService: RoomService,
-    private store: Store<{ password: string }>
+    private store: Store<AppState>
   ) {}
 
   ngOnInit(): void {
@@ -29,8 +30,6 @@ export class AuthorizeRoomDialogComponent implements OnInit {
   }
 
   submit(): void {
-    /* this.roomService.password = this.passwordForm.value.password; */
-    /* console.log(this.passwordForm.value.password); */
     this.store.dispatch(new AddPassword(this.passwordForm.value.password));
     this.dialogService.closeDialog();
   }
