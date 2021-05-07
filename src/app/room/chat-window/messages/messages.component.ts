@@ -12,7 +12,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { setDirectMessage } from '../../store/direct-messages.actions';
 import { AppState } from '../../store/app.reducer';
-import { SetDefaultRoom } from '../../store/room.actions';
+import { setDefaultRoom } from '../../store/room.actions';
 
 @Component({
   selector: 'app-messages',
@@ -63,7 +63,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
             this.messagePrettier(this.room);
           } else {
             this.snackBar.open('Szoba nem érhető el', null, { duration: 2000 });
-            this.store.dispatch(new SetDefaultRoom());
+            this.store.dispatch(setDefaultRoom());
           }
         })
       );
@@ -89,10 +89,10 @@ export class MessagesComponent implements OnInit, OnDestroy {
 
   private observePassword() {
     this.store
-      .select('password')
+      .select('room')
       .pipe(skip(1), first())
-      .subscribe((password) => {
-        this.observeRoom(this.roomInput.queryId, password);
+      .subscribe((res: Room) => {
+        console.log(res);
       });
   }
 

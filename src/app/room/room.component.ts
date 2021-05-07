@@ -13,7 +13,7 @@ import { map, shareReplay, first } from 'rxjs/operators';
 import { Store } from '@ngrx/store';
 import { setDirectMessage } from './store/direct-messages.actions';
 import { AppState } from './store/app.reducer';
-import { SetRoom } from './store/room.actions';
+import { setRoom } from './store/room.actions';
 
 @Component({
   selector: 'app-room',
@@ -69,7 +69,7 @@ export class RoomComponent implements OnInit {
   }
 
   setRoomToOpen(room: Room) {
-    this.store.dispatch(new SetRoom(room));
+    this.store.dispatch(setRoom(room));
   }
 
   private observeOnlineUsers(): void {

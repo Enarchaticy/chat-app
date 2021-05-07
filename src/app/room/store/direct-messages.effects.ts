@@ -1,103 +1,64 @@
-/* import { Injectable } from '@angular/core';
-import { Actions, Effect, ofType } from '@ngrx/effects';
-import { first, switchMap } from 'rxjs/operators';
-import { Room, Visibility } from 'src/app/interfaces/room';
+import { Injectable } from '@angular/core';
+import { Actions, createEffect, ofType } from '@ngrx/effects';
+import { first, map, mergeMap } from 'rxjs/operators';
 import { User } from 'src/app/interfaces/user';
 import { RoomService } from 'src/app/services/room.service';
+
 import {
-  DirectMessagesActions,
-  SET_DIRECT_MESSAGE,
+  SET_DIRECT_MESSAGE /* CREATE_DIRECT_MESSAGE */,
 } from './direct-messages.actions';
+import { SET_DEFAULT, SET_ROOM } from './room.actions';
 
 @Injectable()
-export class DirectMessagesEffect {
-  @Effect()
-  setDirectMessages = this.actions$.pipe(
-    ofType(SET_DIRECT_MESSAGE),
-    switchMap(async (directMessagesData: DirectMessagesActions) => {
-      console.log(directMessagesData);
-      return this.observeDirectMessages(directMessagesData.payload);
-    })
+export class DirectMessagesEffects {
+  setDirectMessage$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(SET_DIRECT_MESSAGE),
+      mergeMap((action: User) =>
+        this.roomService.getDirectMessages(action.identifier[0]).pipe(
+          first(),
+          map((rooms) => {
+            if (rooms.length > 0) {
+              return { type: SET_ROOM, ...rooms[0] };
+            }
+            return { type: SET_DEFAULT };
+            /* TODO megcsinálni azt, ha nincs szoba else {
+              return { type: CREATE_DIRECT_MESSAGE, ...action };
+            } */
+          })
+        )
+      )
+    )
   );
 
-  constructor(private actions$: Actions, private roomService: RoomService) {}
-
-  observeDirectMessages(friend: User) {
-    return this.roomService
-      .getDirectMessages(friend.identifier[0])
-      .pipe(first())
-      .subscribe((result: Room[]) => {
-        if (result.length > 0) {
-          console.log(result);
-         // this.store.dispatch(new SetRoom(result[0]));
-        } else {
-          this.createRoomForDirectMessages(friend);
-        }
-      });
-  }
-
-  private createRoomForDirectMessages(friend: User) {
+  /* createDirectMessage$ = createEffect(() => {
     const token = JSON.parse(localStorage.getItem('user'));
-    return this.roomService
-      .create({
-        visibility: Visibility.private,
-        memberIds: [
-          friend.identifier[0] + token.uid,
-          token.uid + friend.identifier[0],
-          friend.identifier[0],
-          token.uid,
-        ],
-        members: [
-          friend,
-          {
-            id: token.uid,
-            name: token.displayName,
-          },
-        ],
-        memberNumber: 2,
-      })
-      .pipe(first())
-      .subscribe(() => {
-        this.observeDirectMessages(friend);
-      });
-  }
-} */
+    return this.actions$.pipe(
+      ofType(CREATE_DIRECT_MESSAGE),
+      mergeMap((action: User) => this.roomService
+          .create({
+            visibility: Visibility.private,
+            memberIds: [
+              action.identifier[0] + token.uid,
+              token.uid + action.identifier[0],
+              action.identifier[0],
+              token.uid,
+            ],
+            members: [
+              action,
+              {
+                id: token.uid,
+                name: token.displayName,
+              },
+            ],
+            memberNumber: 2,
+          })
+          .pipe(
+            first(),
+            map(() => ({ type: SET_DEFAULT }))
+          ))
+    );
+  }); */
 
-/* const observeDirectMessages = (friend: User): void => {
-  this.roomService
-    .getDirectMessages(friend.identifier[0])
-    .pipe(first())
-    .subscribe((result: Room[]) => {
-      if (result.length > 0) {
-        this.store.dispatch(new SetRoom(result[0]));
-      } else {
-        this.createRoomForDirectMessages(friend);
-      }
-    });
-};
-
-const createRoomForDirectMessages = (friend: User): void => {
-  const token = JSON.parse(localStorage.getItem('user'));
-  this.roomService
-    .create({
-      visibility: Visibility.private,
-      memberIds: [
-        friend.identifier[0] + token.uid,
-        token.uid + friend.identifier[0],
-        friend.identifier[0],
-        token.uid,
-      ],
-      members: [
-        friend,
-        {
-          id: token.uid,
-          name: token.displayName,
-        },
-      ],
-      memberNumber: 2,
-    })
-    .pipe(first())
-    .subscribe(() => {
-      this.observeDirectMessages(friend);
-    });
-}; */
+  constructor(private actions$: Actions, private roomService: RoomService) {}
+}

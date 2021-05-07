@@ -1,9 +1,8 @@
-import { RoomService } from './../../../services/room.service';
 import { DialogService } from './../dialog.service';
 import { Component, OnInit } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { Store } from '@ngrx/store';
-import { AddPassword } from '../../store/password.actions';
+import { addPassword } from '../../store/password.actions';
 import { AppState } from '../../store/app.reducer';
 @Component({
   selector: 'app-authorize-room-dialog',
@@ -15,7 +14,6 @@ export class AuthorizeRoomDialogComponent implements OnInit {
 
   constructor(
     public dialogService: DialogService,
-    private roomService: RoomService,
     private store: Store<AppState>
   ) {}
 
@@ -29,8 +27,10 @@ export class AuthorizeRoomDialogComponent implements OnInit {
     });
   }
 
-  submit(): void {
-    this.store.dispatch(new AddPassword(this.passwordForm.value.password));
+  submit(): void { // todo a beégetett sztirnget kivenni
+    this.store.dispatch(
+      addPassword({ id: '2606063721', password: this.passwordForm.value.password })
+    );
     this.dialogService.closeDialog();
   }
 }
