@@ -1,7 +1,7 @@
 import { createReducer, on } from '@ngrx/store';
 import {
+  createDirectMessage,
   setDirectMessage,
-  /* createDirectMessage, */
 } from './direct-messages.actions';
 
 export const directMessagesReducer = createReducer(
@@ -9,8 +9,6 @@ export const directMessagesReducer = createReducer(
   on(setDirectMessage, (state, action) => ({
     ...state,
     ...action,
-  }))
-  /* on(createDirectMessage, (state, action) => {
-    return { ...state, ...action };
-  }) */
+  })),
+  on(createDirectMessage, (state, action) => ({ ...state, ...action }))
 );

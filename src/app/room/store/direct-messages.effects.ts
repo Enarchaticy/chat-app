@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { first, map, mergeMap } from 'rxjs/operators';
+import { Visibility } from 'src/app/interfaces/room';
 import { User } from 'src/app/interfaces/user';
 import { RoomService } from 'src/app/services/room.service';
 
 import {
+  CREATE_DIRECT_MESSAGE,
   SET_DIRECT_MESSAGE /* CREATE_DIRECT_MESSAGE */,
 } from './direct-messages.actions';
 import { SET_DEFAULT, SET_ROOM } from './room.actions';
@@ -19,23 +21,22 @@ export class DirectMessagesEffects {
           first(),
           map((rooms) => {
             if (rooms.length > 0) {
-              return { type: SET_ROOM, ...rooms[0] };
+              return { ...rooms[0], type: SET_ROOM/* , isAuthorized: true */  };
+            } else {
+              return { ...action, type: CREATE_DIRECT_MESSAGE };
             }
-            return { type: SET_DEFAULT };
-            /* TODO megcsinálni azt, ha nincs szoba else {
-              return { type: CREATE_DIRECT_MESSAGE, ...action };
-            } */
           })
         )
       )
     )
   );
 
-  /* createDirectMessage$ = createEffect(() => {
+  createDirectMessage$ = createEffect(() => {
     const token = JSON.parse(localStorage.getItem('user'));
     return this.actions$.pipe(
       ofType(CREATE_DIRECT_MESSAGE),
-      mergeMap((action: User) => this.roomService
+      mergeMap((action: User) =>
+        this.roomService
           .create({
             visibility: Visibility.private,
             memberIds: [
@@ -55,10 +56,11 @@ export class DirectMessagesEffects {
           })
           .pipe(
             first(),
-            map(() => ({ type: SET_DEFAULT }))
-          ))
+            map(() => ({ ...action, type: SET_ROOM/* , isAuthorized: true */ }))
+          )
+      )
     );
-  }); */
+  });
 
   constructor(private actions$: Actions, private roomService: RoomService) {}
 }

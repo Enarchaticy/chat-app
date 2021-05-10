@@ -17,4 +17,5 @@ export interface Room {
   memberIds?: string[];
   messages?: Message[];
   memberNumber?: number;
+  isAuthorized?: boolean;
 }

@@ -24,20 +24,38 @@ export class MessagesComponent implements OnInit, OnDestroy {
   messages;
   room: Room;
   storeSubs: Subscription;
-  roomInput: Room;
-
+  /*   roomInput: Room;
+   */
   constructor(
     private dialogService: DialogService,
     private snackBar: MatSnackBar,
-    private roomService: RoomService,
     private store: Store<AppState>
   ) {}
 
   ngOnInit() {
-    this.storeSubs = this.store.select('room').subscribe((res) => {
+    /* this.storeSubs = this.store.select('room').subscribe((res) => {
       this.roomInput = res;
       this.handleRoomInput();
-    });
+    }); */
+
+    this.room$ = this.store.select('room').pipe(
+      tap((room: Room) => {
+        console.log(room);
+        if (room !== null) {
+          /* this.roomInput = room; */
+          if (room.isAuthorized) {
+            this.room = room;
+            this.messagePrettier(this.room);
+          }
+          if (room.visibility === Visibility.protected && !room.isAuthorized) {
+            this.openAuthorizeRoomDialog();
+          }
+        } else {
+          this.snackBar.open('Szoba nem érhető el', null, { duration: 2000 });
+          this.store.dispatch(setDefaultRoom());
+        }
+      })
+    );
   }
 
   ngOnDestroy() {
@@ -53,7 +71,7 @@ export class MessagesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private observeRoom(roomId: string, password?: string): void {
+  /* private observeRoom(roomId: string, password?: string): void {
     this.room$ = this.roomService
       .getRoom(this.roomInput.visibility, roomId, password)
       .pipe(
@@ -67,34 +85,44 @@ export class MessagesComponent implements OnInit, OnDestroy {
           }
         })
       );
-  }
+  } */
 
-  private handleRoomInput(): void {
-    if (this.roomInput.visibility === Visibility.private) {
-      this.observeRoom(this.roomInput.queryId);
-    } else if (this.roomInput.visibility === Visibility.protected) {
+  /* private handleRoomInput(): void {
+    if (this.roomInput.isAuthorized) {
+      this.room$ = this.store.select('room').pipe(
+        tap((room: Room) => {
+          if (room !== null) {
+            this.room = room;
+            this.messagePrettier(this.room);
+          } else {
+            this.snackBar.open('Szoba nem érhető el', null, { duration: 2000 });
+            this.store.dispatch(setDefaultRoom());
+          }
+        })
+      );
+    } else if (
+      this.roomInput.visibility === Visibility.protected &&
+      !this.roomInput.isAuthorized
+    ) {
       this.openAuthorizeRoomDialog();
-    } else {
-      this.observeRoom(this.roomInput.queryId);
     }
-  }
+  } */
 
   private openAuthorizeRoomDialog(): void {
     const containerPortal = new ComponentPortal(AuthorizeRoomDialogComponent);
     this.dialogService.openDialog<AuthorizeRoomDialogComponent>(
       containerPortal
     );
-    this.observePassword();
+    /* this.observePassword(); */
   }
 
-  private observePassword() {
+  /* private observePassword() {
     this.store
       .select('room')
       .pipe(skip(1), first())
       .subscribe((res: Room) => {
-        console.log(res);
       });
-  }
+  } */
 
   private messagePrettier(room: Room): void {
     this.messages = this.groupBy(
