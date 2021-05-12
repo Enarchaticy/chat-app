@@ -7,9 +7,9 @@ import { RoomService } from 'src/app/services/room.service';
 
 import {
   CREATE_DIRECT_MESSAGE,
-  SET_DIRECT_MESSAGE /* CREATE_DIRECT_MESSAGE */,
+  SET_DIRECT_MESSAGE,
 } from './direct-messages.actions';
-import { SET_DEFAULT, SET_ROOM } from './room.actions';
+import { SET_ROOM } from './room.actions';
 
 @Injectable()
 export class DirectMessagesEffects {
@@ -21,7 +21,7 @@ export class DirectMessagesEffects {
           first(),
           map((rooms) => {
             if (rooms.length > 0) {
-              return { ...rooms[0], type: SET_ROOM/* , isAuthorized: true */  };
+              return { ...rooms[0], type: SET_ROOM };
             } else {
               return { ...action, type: CREATE_DIRECT_MESSAGE };
             }
@@ -56,7 +56,7 @@ export class DirectMessagesEffects {
           })
           .pipe(
             first(),
-            map(() => ({ ...action, type: SET_ROOM/* , isAuthorized: true */ }))
+            map(() => ({ ...action, type: SET_ROOM }))
           )
       )
     );

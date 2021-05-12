@@ -1,5 +1,5 @@
 import { Message } from './../../interfaces/message';
-import { Room } from './../../interfaces/room';
+import { Room, Visibility } from './../../interfaces/room';
 import { RoomService } from './../../services/room.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { first } from 'rxjs/operators';
@@ -12,9 +12,9 @@ import { Subscription } from 'rxjs';
   templateUrl: './chat-window.component.html',
   styleUrls: ['./chat-window.component.scss'],
 })
-export class ChatWindowComponent implements OnInit, OnDestroy {
+export class ChatWindowComponent implements OnDestroy, OnInit {
   chat = '';
-  roomInput: Room;
+  roomInput: Room = { id: 'me', visibility: Visibility.public };
   storeSubs: Subscription;
 
   constructor(
@@ -22,15 +22,21 @@ export class ChatWindowComponent implements OnInit, OnDestroy {
     private store: Store<AppState>
   ) {}
 
+  ngOnDestroy() {
+    if (this.storeSubs) {
+      this.storeSubs.unsubscribe();
+    }
+  }
+
   ngOnInit() {
     this.storeSubs = this.store.select('room').subscribe((res) => {
       this.roomInput = res;
     });
   }
 
-  ngOnDestroy() {
-    if (this.storeSubs) {
-      this.storeSubs.unsubscribe();
+  setRoom(room: Room) {
+    if (room) {
+      this.roomInput = room;
     }
   }
 

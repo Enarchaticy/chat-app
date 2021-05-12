@@ -4,6 +4,5 @@ export const ADD_PASSWORD = '[Password] Add Password';
 
 export const addPassword = createAction(
   ADD_PASSWORD,
-  props<{ password: string; id: string }>()
+  props<{ password: string }>()
 );
-

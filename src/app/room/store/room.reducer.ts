@@ -1,6 +1,6 @@
 import { createReducer, on } from '@ngrx/store';
 import { Room, Visibility } from 'src/app/interfaces/room';
-import { setDefaultRoom, authorizeRoom, setRoom } from './room.actions';
+import { setDefaultRoom, setRoom } from './room.actions';
 
 const defaultState: Room = { id: 'me', visibility: Visibility.public };
 
@@ -10,15 +10,10 @@ export const roomReducer = createReducer(
     ...state,
     ...defaultState,
   })),
-  on(authorizeRoom, (state, action) => ({
-    ...state,
-    ...action,
-    id: action.queryId /* TODO ezt megnézni elrontja-e */,
-  })),
   on(setRoom, (state, action) => ({
     ...state,
     ...action,
-    isAuthorized: true,
+    id: action.queryId,
   }))
 );
 

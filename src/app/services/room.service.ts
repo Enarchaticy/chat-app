@@ -63,6 +63,7 @@ export class RoomService {
   }
 
   sendMessage(id: string, message: Message): Observable<void> {
+    console.log(id, message);
     return from(
       this.firestore
         .collection('room')

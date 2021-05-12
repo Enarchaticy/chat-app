@@ -21,8 +21,6 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { appReducerMap } from './room/store/app.reducer';
 import { EffectsModule } from '@ngrx/effects';
 import { DirectMessagesEffects } from './room/store/direct-messages.effects';
-import { PasswordEffect } from './room/store/password.effects';
-import { RoomEffects } from './room/store/room.effects';
 
 @NgModule({
   declarations: [AppComponent],
@@ -39,7 +37,7 @@ import { RoomEffects } from './room/store/room.effects';
     MatSnackBarModule,
     ReactiveFormsModule,
     StoreModule.forRoot(appReducerMap),
-    EffectsModule.forRoot([DirectMessagesEffects, PasswordEffect, RoomEffects]),
+    EffectsModule.forRoot([DirectMessagesEffects]),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFireAuthModule,
     StoreDevtoolsModule.instrument({ logOnly: environment.production }),

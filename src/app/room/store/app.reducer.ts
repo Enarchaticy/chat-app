@@ -4,7 +4,6 @@ import { User } from 'src/app/interfaces/user';
 import { ActionReducerMap } from '@ngrx/store';
 import { roomReducer } from './room.reducer';
 import { Room } from 'src/app/interfaces/room';
-
 export interface AppState {
   password: string;
   directMessages: User;

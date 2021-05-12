@@ -27,9 +27,9 @@ export class AuthorizeRoomDialogComponent implements OnInit {
     });
   }
 
-  submit(): void { // todo a beégetett sztirnget kivenni
+  submit(): void {
     this.store.dispatch(
-      addPassword({ id: '2606063721', password: this.passwordForm.value.password })
+      addPassword({ password: this.passwordForm.value.password })
     );
     this.dialogService.closeDialog();
   }

@@ -5,7 +5,7 @@
 </ng-container>
 <ng-template #notMyself>
   <div class="message-area">
-    <app-messages></app-messages>
+    <app-messages (roomSubmit)="setRoom($event)"></app-messages>
   </div>
   <div class="form-container">
     <mat-form-field class="bottom-full-width">
