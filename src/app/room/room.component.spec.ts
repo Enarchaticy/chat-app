@@ -19,13 +19,21 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { setStorageUser } from '../test/utils';
+import {
+  MOCK_OTHER_USER,
+  MOCK_PRIVATE_ROOM,
+  NGRX_INITIAL_STATE,
+  setStorageUser,
+} from '../test/utils';
 import { RoomService } from '../services/room.service';
 import { of } from 'rxjs';
 import { UserService } from '../services/user.service';
 import { DialogService } from './dialogs/dialog.service';
 import { AuthComponent } from '../auth/auth.component';
 import { useMockStorage } from '../test/mock-storage';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import { setDirectMessage } from './store/direct-messages.actions';
+import { setRoom } from './store/room.actions';
 
 describe('RoomComponent', () => {
   let component: RoomComponent;
@@ -33,6 +41,7 @@ describe('RoomComponent', () => {
   let roomService: jasmine.SpyObj<RoomService>;
   let userService: jasmine.SpyObj<UserService>;
   let dialogService: jasmine.SpyObj<DialogService>;
+  let store: MockStore;
 
   beforeEach(async () => {
     roomService = jasmine.createSpyObj<RoomService>('RoomService', {
@@ -83,12 +92,14 @@ describe('RoomComponent', () => {
         { provide: UserService, useValue: userService },
         { provide: RoomService, useValue: roomService },
         { provide: DialogService, useValue: dialogService },
+        provideMockStore({ initialState: NGRX_INITIAL_STATE }),
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
   beforeEach(() => {
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(RoomComponent);
     component = fixture.componentInstance;
     useMockStorage();
@@ -118,5 +129,25 @@ describe('RoomComponent', () => {
     expect(userService.logout).toHaveBeenCalledTimes(1);
     expect(userService.updateIsOnline).toHaveBeenCalledTimes(1);
     expect(localStorage.getItem('user')).toBe(null);
+  });
+
+  it('should openCreateRoomDialog open a dialog', () => {
+    const spyOnStore = spyOn(store, 'dispatch');
+    component.setUserForDirectMessage(MOCK_OTHER_USER);
+
+    expect(spyOnStore).toHaveBeenCalledTimes(1);
+    expect(spyOnStore).toHaveBeenCalledOnceWith(
+      setDirectMessage(MOCK_OTHER_USER)
+    );
+  });
+
+  it('should openCreateRoomDialog open a dialog', () => {
+    const spyOnStore = spyOn(store, 'dispatch');
+    component.setRoomToOpen(MOCK_PRIVATE_ROOM);
+
+    expect(spyOnStore).toHaveBeenCalledTimes(1);
+    expect(spyOnStore).toHaveBeenCalledOnceWith(
+      setRoom(MOCK_PRIVATE_ROOM)
+    );
   });
 });

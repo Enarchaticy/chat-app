@@ -56,12 +56,10 @@ export class MessagesComponent implements OnInit {
       .pipe(
         tap((room: Room) => {
           if (room !== null) {
-            console.log(room);
             this.room = room;
             this.messagePrettier(this.room);
             this.roomSubmit.emit(room);
             // todo: valamiért rosszul működik, kétszer kéri le
-            // todo: innen levinni a roomInputot
           } else {
             this.snackBar.open('Szoba nem érhető el', null, { duration: 2000 });
             this.store.dispatch(setDefaultRoom());
@@ -93,7 +91,6 @@ export class MessagesComponent implements OnInit {
       .select('password')
       .pipe(skip(1), first())
       .subscribe((res: any) => {
-        console.log(res.password);
         this.observeRoom(this.roomInput.queryId, res.password);
       });
   }

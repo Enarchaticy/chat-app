@@ -10,7 +10,9 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { useMockStorage } from 'src/app/test/mock-storage';
+import { NGRX_INITIAL_STATE } from 'src/app/test/utils';
 import { environment } from 'src/environments/environment';
 import { DialogService } from '../dialog.service';
 
@@ -20,6 +22,7 @@ describe('AuthorizeRoomDialogComponent', () => {
   let component: AuthorizeRoomDialogComponent;
   let fixture: ComponentFixture<AuthorizeRoomDialogComponent>;
   let dialogService: jasmine.SpyObj<DialogService>;
+  let store: MockStore;
 
   beforeEach(async () => {
     dialogService = jasmine.createSpyObj<DialogService>('DialogService', {
@@ -41,12 +44,16 @@ describe('AuthorizeRoomDialogComponent', () => {
         ReactiveFormsModule,
         BrowserAnimationsModule,
       ],
-      providers: [{ provide: DialogService, useValue: dialogService }],
+      providers: [
+        { provide: DialogService, useValue: dialogService },
+        provideMockStore({ initialState: NGRX_INITIAL_STATE }),
+      ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
   });
 
   beforeEach(() => {
+    store = TestBed.inject(MockStore);
     fixture = TestBed.createComponent(AuthorizeRoomDialogComponent);
     component = fixture.componentInstance;
     useMockStorage();
@@ -58,9 +65,11 @@ describe('AuthorizeRoomDialogComponent', () => {
   });
 
   it('should send password through passwordSubject after submit', () => {
+    const spyOnStore = spyOn(store, 'dispatch');
     component.resetForm();
     component.passwordForm.value.password = 'testPassword';
     component.submit();
     expect(dialogService.closeDialog).toHaveBeenCalledTimes(1);
+    expect(spyOnStore).toHaveBeenCalledTimes(1);
   });
 });

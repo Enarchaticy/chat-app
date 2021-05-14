@@ -100,7 +100,12 @@ export const MOCK_PRIVATE_ROOM: Room = {
 
 export const MOCK_DIRECT_MESSAGES = {
   visibility: Visibility.private,
-  memberIds: ['otherUserIdauthUserId', 'authUserIdotherUserId', 'otherUserId', 'authUserId'],
+  memberIds: [
+    'otherUserIdauthUserId',
+    'authUserIdotherUserId',
+    'otherUserId',
+    'authUserId',
+  ],
   members: [
     {
       uid: 'otherUserId',
@@ -111,4 +116,10 @@ export const MOCK_DIRECT_MESSAGES = {
     { id: 'authUserId', name: 'authUser' },
   ],
   memberNumber: 2,
+};
+
+export const NGRX_INITIAL_STATE = {
+  password: undefined,
+  room: { id: 'me', visibility: Visibility.public, name: 'me' },
+  directMessage: null,
 };

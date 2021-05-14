@@ -18,7 +18,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MessagesComponent } from './chat-window/messages/messages.component';
 import { RoomFormComponent } from './dialogs/create-room-dialog/room-form/room-form.component';
-import { RoomBodyComponent } from './room-body/room-body.component';
 
 const routes: Routes = [
   {
@@ -35,7 +34,6 @@ const routes: Routes = [
     AuthorizeRoomDialogComponent,
     MessagesComponent,
     RoomFormComponent,
-    RoomBodyComponent,
   ],
   imports: [
     CommonModule,
